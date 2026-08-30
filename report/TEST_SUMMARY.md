@@ -1,0 +1,49 @@
+# Test Summary Report
+
+## Execution metadata
+
+| Field | Value |
+| :--- | :--- |
+| Execution ID | `[RUN_ID]` |
+| Start/end time | `[ISO timestamps]` |
+| SUT commit | `[SHA]` |
+| Collection/environment | `[paths + versions]` |
+| Newman report | `[path/link]` |
+
+## Metrics
+
+| Metric | FR-02 | FR-10 | FR-15 | Total |
+| :--- | ---: | ---: | ---: | ---: |
+| AI-generated | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| AI VALID | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| AI INVALID | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| AI INCOMPLETE | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Human-added | `[≥5]` | `[≥5]` | `[≥5]` | `[≥15]` |
+| Final executable | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Executed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Passed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Failed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Blocked/skipped | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Genuine bugs | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+
+## Coverage
+
+| Coverage dimension | Planned | Covered | Gaps and rationale |
+| :--- | ---: | ---: | :--- |
+| Requirements/rules | `[ ]` | `[ ]` | `[ ]` |
+| Input partitions/boundaries | `[ ]` | `[ ]` | `[ ]` |
+| Valid/invalid transitions | `[ ]` | `[ ]` | `[ ]` |
+| Applicable SEC requirements | `[ ]` | `[ ]` | `[ ]` |
+| Response schemas | `[ ]` | `[ ]` | `[ ]` |
+
+## Failure classification
+
+| TC ID | Result | Classification (`Product bug/Test bug/Environment/Spec ambiguity`) | Bug ID/action |
+| :--- | :--- | :--- | :--- |
+| `[TC]` | `[FAIL]` | `[classification]` | `[link/action]` |
+
+## Exit assessment
+
+- Release/test conclusion: `[PASS / PASS WITH RISKS / FAIL / BLOCKED]`.
+- Residual risks: `[list]`.
+- Recommended next tests: `[list]`.

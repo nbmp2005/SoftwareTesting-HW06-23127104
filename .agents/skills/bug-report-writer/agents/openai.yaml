@@ -1,0 +1,4 @@
+interface:
+  display_name: "HW06 Bug Report Writer"
+  short_description: "Triage evidence and update HW06 bug reports"
+  default_prompt: "Use $bug-report-writer to triage this failure and update all affected HW06 reports if it is a genuine bug."

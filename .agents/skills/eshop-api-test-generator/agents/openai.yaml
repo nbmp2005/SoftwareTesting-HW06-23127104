@@ -1,0 +1,4 @@
+interface:
+  display_name: "EShop API Test Generator"
+  short_description: "Generate traceable EShop API test designs"
+  default_prompt: "Use $eshop-api-test-generator to generate traceable tests for one EShop feature and synchronize the affected HW06 reports."

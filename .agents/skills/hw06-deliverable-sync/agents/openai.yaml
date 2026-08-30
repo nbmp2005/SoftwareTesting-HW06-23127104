@@ -1,0 +1,4 @@
+interface:
+  display_name: "HW06 Deliverable Sync"
+  short_description: "Reconcile HW06 reports from real artifacts"
+  default_prompt: "Use $hw06-deliverable-sync to reconcile all affected HW06 report files from the available source artifacts."

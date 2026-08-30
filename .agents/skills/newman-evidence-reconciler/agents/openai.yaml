@@ -1,0 +1,4 @@
+interface:
+  display_name: "Newman Evidence Reconciler"
+  short_description: "Import real Newman results into HW06 reports"
+  default_prompt: "Use $newman-evidence-reconciler to parse this real Newman run and synchronize the HW06 reports."

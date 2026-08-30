@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Audit Logger"
+  short_description: "Record evidence-based HW06 AI interactions"
+  default_prompt: "Use $ai-audit-logger to append this interaction to the HW06 AI Audit Report with a real timestamp."

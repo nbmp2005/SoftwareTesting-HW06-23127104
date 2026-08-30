@@ -1,0 +1,4 @@
+interface:
+  display_name: "Postman Script Writer"
+  short_description: "Implement reviewed HW06 cases in Postman"
+  default_prompt: "Use $postman-script-writer to implement assertions for this reviewed test case and synchronize related documentation."
