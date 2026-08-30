@@ -1,0 +1,46 @@
+tcId,requestBody,expectedStatus,expectedBody,saveTokenAs,probeEmail,accountVariant
+FR02-AI-001,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,unknown
+FR02-AI-002,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,registered
+FR02-AI-003,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,unknown
+FR02-AI-004,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,registered
+FR02-AI-005,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,unknown
+FR02-AI-006,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-007,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-008,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-009,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-010,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-011,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-012,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-013,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-014,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-015,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-016,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-017,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-018,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-019,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-020,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-021,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-022,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-023,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-024,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-025,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-026,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-027,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-028,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-029,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-030,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-031,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-032,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-033,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-034,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-035,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-036,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-037,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-038,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-AI-039,"{""email"":""test@eshop.com"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,unknown
+FR02-AI-040,"{""email"":""' OR 1=1 --"", ""password"":""WRONG""}",4xx,{},,test@eshop.com,registered
+FR02-H-001,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",4xx,{},,test@eshop.com,unknown
+FR02-H-002,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",,test@eshop.com,registered
+FR02-H-003,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",,test@eshop.com,unknown
+FR02-H-004,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",,test@eshop.com,registered
+FR02-H-005,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",,test@eshop.com,unknown

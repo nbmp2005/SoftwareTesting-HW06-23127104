@@ -94,7 +94,7 @@ Postman implementation status: the collection has a data-driven `Login` request 
 
 | Final | Executed | Passed | Failed | Blocked/skipped | Bugs |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| `[ ]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| `45` | `45` | `36` | `9` | `0` | `1` |
 
 Evidence: `[NEWMAN SECTION/SCREENSHOT/COMMIT]`. Findings: `[summary]`.
 

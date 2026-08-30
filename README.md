@@ -23,11 +23,11 @@ Chỉ điền số liệu từ kết quả thực tế; không suy đoán hoặc
 | :--- | ---: | ---: | ---: | ---: |
 | AI-generated test cases | `40` | `0` | `0` | `40` |
 | Human-added test cases | `5` | `0` | `0` | `5` |
-| Final test cases | `[pending audit]` | `[pending]` | `[pending]` | `[pending]` |
-| Executed | `[0]` | `[0]` | `[0]` | `[0]` |
-| Passed | `[0]` | `[0]` | `[0]` | `[0]` |
-| Failed | `[0]` | `[0]` | `[0]` | `[0]` |
-| Genuine bugs | `[0]` | `[0]` | `[0]` | `[0]` |
+| Final test cases | `45` | `[pending]` | `[pending]` | `[pending]` |
+| Executed | `45` | `[0]` | `[0]` | `[0]` |
+| Passed | `36` | `[0]` | `[0]` | `[0]` |
+| Failed | `9` | `[0]` | `[0]` | `[0]` |
+| Genuine bugs | `1` | `[0]` | `[0]` | `[0]` |
 
 ## Self-assessment
 

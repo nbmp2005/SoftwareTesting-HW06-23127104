@@ -19,12 +19,12 @@
 | AI INVALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
 | AI INCOMPLETE | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
 | Human-added | `5` | `0` | `0` | `5` |
-| Final executable | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| Executed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| Passed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| Failed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Final executable | `45` | `[ ]` | `[ ]` | `[ ]` |
+| Executed | `45` | `[ ]` | `[ ]` | `[ ]` |
+| Passed | `36` | `[ ]` | `[ ]` | `[ ]` |
+| Failed | `9` | `[ ]` | `[ ]` | `[ ]` |
 | Blocked/skipped | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| Genuine bugs | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| Genuine bugs | `1` | `[ ]` | `[ ]` | `[ ]` |
 
 ## Coverage
 

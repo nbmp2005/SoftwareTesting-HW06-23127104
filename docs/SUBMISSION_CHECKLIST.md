@@ -16,9 +16,9 @@
 | 100% labeled VALID/INVALID/INCOMPLETE | [ ] | [ ] | [ ] |
 | Corrections cho invalid/incomplete | [ ] | [ ] | [ ] |
 | ≥5 human-added cases + miss analysis | [x] | [ ] | [ ] |
-| Postman implementation | [ ] | [ ] | [ ] |
-| Newman execution evidence | [ ] | [ ] | [ ] |
-| Bugs triaged/reported | [ ] | [ ] | [ ] |
+| Postman implementation | [x] | [ ] | [ ] |
+| Newman execution evidence | [x] | [ ] | [ ] |
+| Bugs triaged/reported | [x] | [ ] | [ ] |
 
 ## Technical/package
 
