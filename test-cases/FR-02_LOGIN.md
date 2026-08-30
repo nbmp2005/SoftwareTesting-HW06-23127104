@@ -39,6 +39,10 @@
 | `ASM-FR02-05` | Exact JWT claims and top-level extra success fields are unspecified | Validate JWT syntax, decodable header/payload, `token` and `user`; do not invent required claims or forbid unrelated fields |
 | `ASM-FR02-06` | Exact 30-second scheduler boundary/tolerance is unspecified | Keep 29/30/31-second cases; exact `t=30` execution needs controlled clock or documented tolerance |
 | `ASM-FR02-07` | Unsupported media-type/method status is unspecified | Expect safe `4xx`; exact `400/404/405/415` pending |
+| `ASM-FR02-H01` | Password-reset behavior during an active login lock is not specified | Security working oracle: resetting the password must not clear or shorten the existing `locked_until`; verify again after the original 30-second window |
+| `ASM-FR02-H02` | Email case-normalization and the key used for the failure counter are not specified | Case variants that resolve to the same account must share one counter; otherwise lockout can be bypassed by changing letter case |
+| `ASM-FR02-H03` | It is not explicit whether attempts made while locked extend the lock | Treat “locked for 30 seconds” as a fixed interval beginning at the third failure; requests during the interval must not create a sliding lock |
+| `ASM-FR02-H04` | Unknown-email behavior for `/api/forgot-password` is unspecified, while the documented success body includes `resetToken` | Compare registered/unknown responses for account-enumeration differences. Do not report the documented `resetToken` field itself as a bug unless the contract/security requirement is revised |
 
 ## 2. Coverage inventory
 
@@ -47,10 +51,11 @@
 | Valid login/token/schema | Fresh login, JWT syntax/usability, success schema, sensitive-field exclusion | `FR02-AI-001`–`005` |
 | Attempt counter/reset | `0→1`, `1→2`, `2→3`, reset after success/expiry, account isolation, concurrency | `FR02-AI-006`–`010`, `014`–`020` |
 | Lock timing | Immediate, 29s, exactly 30s, 31s | `FR02-AI-008`–`013`, `019`–`020` |
-| Email partitions | Missing/null/empty/whitespace; malformed strings; wrong JSON types; unknown account; SQLi | `FR02-AI-021`–`033`, `049`–`050` |
-| Password partitions | Missing/null/empty/whitespace; wrong JSON types; long/Unicode/SQLi strings | `FR02-AI-027`–`044`, plus `006`–`020` |
-| Protocol and error schema | Empty/malformed body, media type, method, enumeration parity | `FR02-AI-035`–`049` |
-| Security requirements | SEC-02 token usability; SEC-05 behavioral injection; response leakage/enumeration | `FR02-AI-004`, `005`, `017`, `044`, `049`, `050` |
+| Email partitions | Missing/null/empty; malformed strings; wrong JSON types; unknown account; SQLi | `FR02-AI-021`–`026`, `039`–`040` |
+| Password partitions | Missing/null/empty/whitespace; wrong JSON types; long/Unicode/SQLi strings | `FR02-AI-027`–`034`, plus `006`–`020` |
+| Protocol and error schema | Empty/malformed body, media type, method, enumeration parity | `FR02-AI-035`–`039` |
+| Security requirements | SEC-02 token usability; SEC-05 behavioral injection; response leakage/enumeration | `FR02-AI-004`, `005`, `017`, `034`, `039`, `040` |
+| Human security extensions | JWT forgery, cross-feature lock bypass, email normalization, fixed lock timing, forgot-password enumeration | `FR02-H-001`–`005` |
 
 ## 3. Decision table
 
@@ -111,29 +116,41 @@ Audit columns are intentionally blank for student review. All results remain `NO
 
 ## 5. Human-added cases
 
-The student must add at least five cases after auditing the AI candidates. No HUMAN case is pre-populated by the agent.
+The following five extensions were explicitly authored and supplied by the student. Wording and oracle structure were tightened during review; authorship remains `HUMAN`. Cross-feature assumptions are recorded in `ASM-FR02-H01`–`H04` so a failed assertion is not automatically reported as a product bug.
 
 | TC ID | Source | Req | Technique | Priority | Preconditions | Request/data | Expected status/body/post-state | Cleanup | Why AI missed | Execution/evidence |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `FR02-H-001` | `HUMAN` | FR-02; SEC-02 | Security, JWT forgery | P0 | `U-A` has logged in successfully; retain a valid JWT in a local Postman variable | Decode the JWT header, replace it with `{"alg":"none","typ":"JWT"}`, remove the signature and send `Authorization: Bearer <forged_token>` to `GET /api/users/me` | `401` or `403`; no `user`/`profile` is returned; the read-only probe changes no account state | Unset valid/forged token variables | AI checked only three-segment JWT syntax and decodable JSON under `ASM-FR02-05`; the generation prompt did not ask it to mutate the signing algorithm or attempt signature-verification bypass | `NOT RUN` |
+| `FR02-H-002` | `HUMAN` | FR-02-R3,R4; FR-03 cross-feature | Security, state bypass, sequence | P0 | Lock `U-A` at recorded `t0` with three consecutive failures; a deterministic password-reset fixture is available | Before `t0+30s`, call `POST /api/forgot-password`, reset via `POST /api/reset-password`, then try the new password; retry the new password after `t0+31s` | Before expiry: generic `4xx`, no token/user, original lock remains active. After `t0+31s`: `200` with token/user, proving reset succeeded without bypassing the lock. Oracle uses `ASM-FR02-H01` | Restore `U-A` password/counter/lock snapshot; clear reset token | The original prompt scoped generation to `/api/login`, so the model did not compose FR-02 lock state with the FR-03 password-reset flow | `NOT RUN` |
+| `FR02-H-003` | `HUMAN` | FR-02-R2,R3 | State, security, normalization | P0 | `U-A` email is `test@domain.com`; attempts=0/unlocked; lookup accepts equivalent email case variants | Send three wrong-password logins using `test@domain.com`, `TEST@DOMAIN.COM`, then `Test@Domain.com`; immediately try the correct password with the canonical email | All three failures map to the same account/counter; the third locks `U-A`; immediate correct login returns generic `4xx` with no token. Oracle uses `ASM-FR02-H02` | Restore `U-A` snapshot | AI treated `U-A` as a fixed abstract identity and did not test whether authentication lookup and failure-counter keys normalize email consistently | `NOT RUN` |
+| `FR02-H-004` | `HUMAN` | FR-02-R3,R4 | State, sequence, timing/DoS | P1 | `U-A` becomes locked at recorded `t0` after the third failure | At `t0+10s`, send one or two additional wrong-password requests; at `t0+31s`, submit the correct password | Interim requests return generic `4xx` without token and do not move `locked_until`; correct login at `t0+31s` returns `200` with token/user. Oracle uses fixed-window assumption `ASM-FR02-H03` | Restore `U-A` snapshot | AI applied 29/30/31-second BVA as independent points but did not combine a disturbance event with the timing sequence | `NOT RUN` |
+| `FR02-H-005` | `HUMAN` | FR-03; FR-02-R4 security analogy | Security, differential, information disclosure | P0 | One registered email (`U-A`) and one guaranteed-unknown email; both requests run in the same environment | Call `POST /api/forgot-password` once for each email and compare status, top-level schema and generic message; do not compare token values | Responses have equivalent status/schema/generic wording and do not disclose account existence; the unknown request creates/changes no account. The documented `resetToken` field is recorded as contract behavior, not independently classified as a bug (`ASM-FR02-H04`) | Clear any issued reset token; restore `U-A` if the fixture mutates it | AI limited enumeration comparison to `/api/login` and did not transfer the non-revealing-response principle to the related forgot-password endpoint | `NOT RUN` |
 
 ## 6. Coverage closure
 
 | Requirement/rule | Covered IDs | Gap/justification |
 | :--- | :--- | :--- |
 | Valid login `200`, token and user | `FR02-AI-001`–`005` | Exact JWT claims/top-level optional fields unspecified (`ASM-FR02-05`) |
-| Wrong attempt increments exactly 1 | `FR02-AI-006`–`008`, `014`–`020`, `036`–`037`, `042`–`044` | Direct post-state needs fixture/DB probe; malformed-request counter behavior intentionally not assumed |
+| Wrong attempt increments exactly 1 | `FR02-AI-006`–`008`, `014`–`020`, `029`–`034` | Direct post-state needs fixture/DB probe; malformed-request counter behavior intentionally not assumed |
 | Lock begins at third consecutive failure | `FR02-AI-008`–`010`, `016`, `019` | Complete at design level |
 | Lock duration is 30 seconds | `FR02-AI-011`–`013`, `020` | Exact `t=30` needs controlled clock/tolerance resolution (`ASM-FR02-06`) |
 | Success resets failures | `FR02-AI-001`, `014`, `015`, `020` | Complete at design level; requires deterministic state reset/probe at execution |
-| Input partitions/types | `FR02-AI-021`–`044` | Backend validation status/schema unresolved (`ASM-FR02-01`–`04`) |
-| No enumeration/sensitive disclosure | `FR02-AI-005`, `017`, `031`, `049` | Timing side-channel is not asserted because tolerance/environment oracle is unspecified |
-| SQL injection behavioral coverage | `FR02-AI-034`, `050` | Passing cases cannot prove source code uses parameterized queries; code review is separate |
-| Success/error schema | `FR02-AI-002`, `005`, `021`–`050` | Exact error schema/message unspecified (`ASM-FR02-02`) |
-| `X-Student-Id` requirement | All `FR02-AI-001`–`050` | Actual console screenshot must be produced by student during execution |
+| Input partitions/types | `FR02-AI-021`–`038` | Backend validation status/schema unresolved (`ASM-FR02-01`–`04`, `07`) |
+| No enumeration/sensitive disclosure | `FR02-AI-005`, `017`, `025`, `039` | Timing side-channel is not asserted because tolerance/environment oracle is unspecified |
+| SQL injection behavioral coverage | `FR02-AI-034`, `040` | Passing cases cannot prove source code uses parameterized queries; code review is separate |
+| Success/error schema | `FR02-AI-002`, `005`, `021`–`040` | Exact error schema/message unspecified (`ASM-FR02-02`) |
+| `X-Student-Id` requirement | All `FR02-AI-001`–`040` | Actual console screenshot must be produced by student during execution |
 | SEC-01 password not plaintext | `FR02-AI-005` covers response exposure only | Storage-at-rest requirement needs DB/code evidence; login API alone cannot prove it |
+| SEC-02 forged-token rejection | `FR02-H-001` | Requires a valid setup token and protected `/api/users/me` probe |
+| Cross-feature lock bypass/reset | `FR02-H-002` | Working policy must be confirmed against lecturer/code before a failure becomes a bug |
+| Counter identity normalization | `FR02-H-003` | Requires backend lookup to treat case variants as the same account |
+| Fixed versus sliding lock interval | `FR02-H-004` | Fixed-window oracle declared in `ASM-FR02-H03`; record controlled timing |
+| Forgot-password enumeration parity | `FR02-H-005` | Cross-feature security extension; documented `resetToken` exposure is not itself treated as a defect |
 
 ## 7. Generator handoff
 
 - Status: `COMPLETE` for candidate generation; `PARTIAL` for final executable suite until human audit and ambiguities are resolved.
-- AI-generated candidates: **40**. Human-added: **0**. Audit decisions: **pending**. Execution: **NOT RUN**.
-- Student next actions: resolve `ASM-FR02-01`–`07`, label every AI row VALID/INVALID/INCOMPLETE with reasons, correct invalid/incomplete rows, add ≥5 genuinely student-authored cases, then implement and execute in Postman/Newman.
+- AI-generated candidates: **40**. Human-added: **5**. Audit decisions for AI rows: **pending**. Execution: **NOT RUN**.
+- Postman implementation: request `Login` in `HW06_Eshop.postman_collection.json` now contains a data-driven pre-request/test script. Each runner row must provide `tcId`, `requestBody`, `expectedStatus` and `expectedBody`; optional `requestMethod`/`contentType` handle protocol variants. Assertions are named with the iteration TC ID.
+- Implementation boundary: no 40-row iteration data file, deterministic fixture reset, timed wait, concurrency orchestration or cross-endpoint probe exists yet. Therefore the script is reusable across all 40 IDs, but the complete 40-case executable flow is still `PARTIAL` and no row is marked executed.
+- Student next actions: resolve `ASM-FR02-01`–`07` and confirm `ASM-FR02-H01`–`H04`, label every AI row VALID/INVALID/INCOMPLETE with reasons, correct invalid/incomplete rows, then finalize iteration rows/setup and execute in Postman/Newman.

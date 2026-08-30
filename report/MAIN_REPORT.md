@@ -21,7 +21,7 @@ I use AI tools for requirement extraction, test-design assistance, coverage anal
 
 | API | Pool | Feature | In-scope endpoints | Why selected |
 | :--- | :--- | :--- | :--- | :--- |
-| API 1 | A | FR-02 Login & account lockout | `POST /api/login` | Boundary, decision-table, authentication and timed state |
+| API 1 | A | FR-02 Login & account lockout | `POST /api/login`; supporting security probes at `/api/users/me`, `/api/forgot-password`, `/api/reset-password` | Boundary, decision-table, authentication, timed state and cross-feature bypass risk |
 | API 2 | B | FR-10 Order state machine | `PUT /api/admin/orders/:id/status`; `PUT /api/orders/:id/cancel`; supporting reads/setup | Full transition and actor matrix |
 | API 3 | C | FR-15 Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | CRUD, field validation, authorization, isolation |
 
@@ -63,7 +63,7 @@ Each test case contains ID, source, requirement trace, technique, priority, prec
 | Endpoint | `POST /api/login` |
 | Inputs | `email`, `password`; headers including `Content-Type`, `X-Student-Id` |
 | Main rules | Wrong attempt increments exactly 1; locked from 3 consecutive failures; lock 30 seconds; success returns JWT and resets failures |
-| Security focus | SEC-01, SEC-02, SEC-05; enumeration, sensitive response fields |
+| Security focus | SEC-01, SEC-02, SEC-05; forged JWT rejection, enumeration, sensitive response fields and lock-bypass interactions |
 | Data/reset strategy | Dedicated `U-A/U-B/U-C` fixture snapshots; deterministic seed/reset command still pending implementation |
 
 Decision table and detailed cases: [FR-02 test design](../test-cases/FR-02_LOGIN.md). Excel sheet: `[PATH/LINK]`.
@@ -86,7 +86,9 @@ Human audit has not started. No VALID/INVALID/INCOMPLETE decision or correction 
 
 ### 5.4 Human extensions
 
-Human-added count is currently `0`. The student must add at least five original cases with `Why AI missed` analysis after auditing the AI candidates.
+Human-added count is `5`: `FR02-H-001`–`005`, explicitly supplied by the student and refined for deterministic oracles in `AI_AUDIT_REPORT.md` Interaction 008. They cover JWT `alg=none` forgery, password-reset interaction with an active login lock, email case-normalization of the failure counter, attempts injected during the 30-second lock and forgot-password enumeration parity. `H-002`–`H-005` retain explicit working assumptions because the source contract does not fully specify cross-feature lock/reset, normalization, sliding-window or unknown-email behavior. The documented `resetToken` success field is not independently classified as a defect.
+
+Postman implementation status: the collection has a data-driven `Login` request plus an `FR-02 Human Extensions` folder. Dedicated scripts implement the forged-JWT rejection probe (`H-001`), password-reset setup requests (`H-002`) and ordered forgot-password differential comparison (`H-005`); `H-003/H-004` map to state/timing sequences through `Login`. Iteration files, deterministic fixture reset and controlled timing remain pending, so implementation is still partial and no execution is claimed.
 
 ### 5.5 Execution and findings
 
@@ -152,11 +154,11 @@ Chỉ giữ các dòng thực sự đã sử dụng và dẫn evidence.
 | Feature | Use | Evidence |
 | :--- | :--- | :--- |
 | Workspace | `[description]` | `[URL/screenshot]` |
-| Collection/folders | `[description]` | `[path]` |
-| Collection/environment variables | `[description]` | `[path]` |
-| Pre-request script | Add `X-Student-Id`, setup data | `[screenshot/path]` |
-| Test scripts | Status/schema/business assertions | `[path]` |
-| Data-driven run | Transition/partition rows | `[data path/report]` |
+| Collection/folders | FR-02 `Login` request and `FR-02 Human Extensions` support folder | `HW06_Eshop.postman_collection.json` |
+| Collection/environment variables | `baseUrl`; empty `studentId` placeholder (value must be supplied locally) | `HW06_Eshop.postman_collection.json` |
+| Pre-request script | Optional iteration-driven method/content-type overrides; `X-Student-Id` is bound to `{{studentId}}` | `HW06_Eshop.postman_collection.json` |
+| Test scripts | TC-ID trace, status/body oracle, sensitive-field scan, JWT `alg=none` probe and forgot-password differential comparison | `HW06_Eshop.postman_collection.json` |
+| Data-driven run | Script contract supports 40 AI and 5 human IDs; iteration files and run evidence pending | `HW06_Eshop.postman_collection.json` |
 | Mock server | `[description or N/A]` | `[evidence]` |
 | Monitor | `[description or N/A]` | `[evidence]` |
 | Newman reporter | CLI + HTML/JUnit | `[artifact]` |

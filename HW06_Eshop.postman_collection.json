@@ -2,18 +2,511 @@
   "info": {
     "_postman_id": "31cf6f95-181b-4374-8118-46dc343f20ba",
     "name": "HW06_Eshop",
+    "description": "HW06 EShop API collection. Iteration data and execution evidence must not contain secrets.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "50598767",
     "_collection_link": "https://go.postman.co/collection/50598767-31cf6f95-181b-4374-8118-46dc343f20ba?source=collection_link"
   },
   "item": [
     {
-      "name": "New Request",
+      "name": "Login",
+      "description": "Data-driven request for FR-02_LOGIN, including the login steps of FR02-H-002/H-003/H-004. Required iteration columns: tcId, requestBody, expectedStatus, expectedBody. Optional columns: requestMethod, contentType and saveTokenAs. expectedStatus accepts an exact code, an allowed-code list, or a status class such as 4xx when the specification does not define one exact error code. expectedBody is a JSON partial-body oracle and supports $type, $nonEmpty, $absent, $regex and $oneOf. Stateful, timing, concurrency and cross-endpoint cases still require their documented setup flow.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tcId = pm.iterationData.get('tcId');",
+              "const requestMethod = pm.iterationData.get('requestMethod');",
+              "const contentType = pm.iterationData.get('contentType');",
+              "const requestBody = pm.iterationData.get('requestBody');",
+              "",
+              "if (requestMethod) pm.request.method = String(requestMethod).toUpperCase();",
+              "if (contentType) pm.request.headers.upsert({ key: 'Content-Type', value: String(contentType) });",
+              "if (requestBody !== undefined && requestBody !== null && pm.request.body) {",
+              "    const serializedBody = typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody);",
+              "    pm.request.body.update(pm.variables.replaceIn(serializedBody));",
+              "}",
+              "if (!tcId) console.warn('FR-02 data row has no tcId; traceability assertion will fail.');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tcIdRaw = pm.iterationData.get('tcId');",
+              "const expectedStatusRaw = pm.iterationData.get('expectedStatus');",
+              "const expectedBodyRaw = pm.iterationData.get('expectedBody');",
+              "const saveTokenAsRaw = pm.iterationData.get('saveTokenAs');",
+              "const tcId = tcIdRaw == null ? '' : String(tcIdRaw).trim();",
+              "const testName = (label) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + label;",
+              "",
+              "pm.test(testName('iteration row has a traceable FR-02 TC ID'), function () {",
+              "    pm.expect(tcId, 'tcId must be provided by iteration data').to.match(/^FR02-(?:AI|H)-\\d{3}$/);",
+              "});",
+              "",
+              "function parseDataValue(raw, fieldName) {",
+              "    if (raw === undefined || raw === null || raw === '') return undefined;",
+              "    if (typeof raw !== 'string') return raw;",
+              "    const value = raw.trim();",
+              "    if (!value) return undefined;",
+              "    try { return JSON.parse(value); }",
+              "    catch (error) {",
+              "        if (fieldName === 'expectedBody') throw new Error(fieldName + ' must be valid JSON: ' + error.message);",
+              "        return value;",
+              "    }",
+              "}",
+              "",
+              "function normalizeStatusOracle(raw) {",
+              "    const parsed = parseDataValue(raw, 'expectedStatus');",
+              "    if (typeof parsed === 'number') return { kind: 'codes', values: [parsed] };",
+              "    if (Array.isArray(parsed)) {",
+              "        const values = parsed.map(Number);",
+              "        if (!values.length || values.some((value) => !Number.isInteger(value))) throw new Error('expectedStatus array must contain integer HTTP status codes');",
+              "        return { kind: 'codes', values: values };",
+              "    }",
+              "    const text = parsed === undefined ? '' : String(parsed).trim();",
+              "    if (/^[1-5]xx$/i.test(text)) return { kind: 'class', value: Number(text[0]) };",
+              "    if (/^\\d{3}(?:\\s*,\\s*\\d{3})+$/.test(text)) return { kind: 'codes', values: text.split(',').map((value) => Number(value.trim())) };",
+              "    if (/^\\d{3}$/.test(text)) return { kind: 'codes', values: [Number(text)] };",
+              "    throw new Error('expectedStatus must be an exact code, a code list, or a class such as 4xx');",
+              "}",
+              "",
+              "let statusOracle;",
+              "let statusOracleError;",
+              "try { statusOracle = normalizeStatusOracle(expectedStatusRaw); } catch (error) { statusOracleError = error; }",
+              "pm.test(testName('expectedStatus data is valid'), function () {",
+              "    pm.expect(statusOracleError, statusOracleError && statusOracleError.message).to.equal(undefined);",
+              "});",
+              "if (statusOracle) {",
+              "    pm.test(testName('response status matches iteration oracle'), function () {",
+              "        if (statusOracle.kind === 'class') pm.expect(Math.floor(pm.response.code / 100)).to.equal(statusOracle.value);",
+              "        else pm.expect(statusOracle.values, 'actual status: ' + pm.response.code).to.include(pm.response.code);",
+              "    });",
+              "}",
+              "",
+              "let expectedBody;",
+              "let expectedBodyError;",
+              "try { expectedBody = parseDataValue(expectedBodyRaw, 'expectedBody'); } catch (error) { expectedBodyError = error; }",
+              "pm.test(testName('expectedBody data is present and valid JSON'), function () {",
+              "    pm.expect(expectedBodyRaw, 'expectedBody must be provided by iteration data').to.not.be.oneOf([undefined, null, '']);",
+              "    pm.expect(expectedBodyError, expectedBodyError && expectedBodyError.message).to.equal(undefined);",
+              "});",
+              "",
+              "function valueType(value) {",
+              "    if (Array.isArray(value)) return 'array';",
+              "    if (value === null) return 'null';",
+              "    return typeof value;",
+              "}",
+              "",
+              "function matchOracle(actual, oracle, path) {",
+              "    if (oracle && typeof oracle === 'object' && !Array.isArray(oracle)) {",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$absent')) {",
+              "            pm.expect(actual, path + ' must be absent').to.equal(undefined);",
+              "            return;",
+              "        }",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$type')) pm.expect(valueType(actual), path + ' type').to.equal(oracle.$type);",
+              "        if (oracle.$nonEmpty === true) {",
+              "            pm.expect(actual, path + ' must be non-empty').to.not.be.oneOf(['', null, undefined]);",
+              "            if (Array.isArray(actual)) pm.expect(actual.length, path + ' must be non-empty').to.be.above(0);",
+              "        }",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$regex')) pm.expect(String(actual), path + ' regex').to.match(new RegExp(oracle.$regex));",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$oneOf')) pm.expect(oracle.$oneOf, path + ' allowed values').to.include(actual);",
+              "        const directives = ['$absent', '$type', '$nonEmpty', '$regex', '$oneOf'];",
+              "        Object.keys(oracle).filter((key) => !directives.includes(key)).forEach((key) => {",
+              "            pm.expect(actual, path + ' must be an object').to.be.an('object');",
+              "            const childOracle = oracle[key];",
+              "            const expectsAbsence = childOracle && typeof childOracle === 'object' && Object.prototype.hasOwnProperty.call(childOracle, '$absent');",
+              "            if (!expectsAbsence) pm.expect(actual, path + '.' + key + ' must exist').to.have.property(key);",
+              "            matchOracle(actual[key], childOracle, path + '.' + key);",
+              "        });",
+              "        return;",
+              "    }",
+              "    if (Array.isArray(oracle)) {",
+              "        pm.expect(actual, path + ' must be an array').to.be.an('array');",
+              "        pm.expect(actual.length, path + ' array length').to.equal(oracle.length);",
+              "        oracle.forEach((value, index) => matchOracle(actual[index], value, path + '[' + index + ']'));",
+              "        return;",
+              "    }",
+              "    pm.expect(actual, path).to.eql(oracle);",
+              "}",
+              "",
+              "if (expectedBody !== undefined && !expectedBodyError) {",
+              "    let actualBody;",
+              "    let jsonError;",
+              "    try { actualBody = pm.response.json(); } catch (error) { jsonError = error; }",
+              "    pm.test(testName('response body is valid JSON'), function () {",
+              "        pm.expect(jsonError, jsonError && jsonError.message).to.equal(undefined);",
+              "    });",
+              "    if (!jsonError) {",
+              "        if (saveTokenAsRaw) {",
+              "            pm.test(testName('token requested by setup row is available'), function () {",
+              "                pm.expect(actualBody).to.be.an('object').that.has.property('token');",
+              "                pm.expect(actualBody.token).to.be.a('string').and.not.empty;",
+              "            });",
+              "            if (actualBody && typeof actualBody.token === 'string' && actualBody.token) {",
+              "                pm.environment.set(String(saveTokenAsRaw), actualBody.token);",
+              "            }",
+              "        }",
+              "        pm.test(testName('response body matches iteration oracle'), function () { matchOracle(actualBody, expectedBody, '$'); });",
+              "        pm.test(testName('response does not expose credential or lockout internals'), function () {",
+              "            const forbidden = /^(password|password_hash|passwordhash|reset_token|resettoken|otp|login_attempts|loginattempts|locked_until|lockeduntil)$/i;",
+              "            const leaks = [];",
+              "            function scan(value, path) {",
+              "                if (!value || typeof value !== 'object') return;",
+              "                Object.keys(value).forEach((key) => {",
+              "                    const nextPath = path + '.' + key;",
+              "                    if (forbidden.test(key)) leaks.push(nextPath);",
+              "                    scan(value[key], nextPath);",
+              "                });",
+              "            }",
+              "            scan(actualBody, '$');",
+              "            pm.expect(leaks, 'sensitive fields found: ' + leaks.join(', ')).to.be.empty;",
+              "        });",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
       "request": {
-        "method": "GET",
-        "header": []
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "X-Student-Id",
+            "value": "{{studentId}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{{requestBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
       },
       "response": []
+    },
+      {
+        "name": "FR-02 Human Extensions",
+        "description": "Support requests for student-authored FR02-H-001..005. H001 and H005 have dedicated assertions. H002 uses the two setup requests here plus Login iterations before/after the original lock expiry. H003 and H004 are state/timing sequences executed through Login iteration rows. No execution result is implied; fixture reset and controlled timing remain required.",
+        "item": [
+          {
+            "name": "FR02-H-001 Forged JWT rejection",
+            "description": "First run a successful Login iteration with saveTokenAs=fr02ValidToken. This request forges alg=none without logging or committing the token.",
+            "event": [
+              {
+                "listen": "prerequest",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const validToken = pm.collectionVariables.get('fr02ValidToken') || pm.environment.get('fr02ValidToken');",
+                    "if (!validToken) throw new Error('FR02-H-001 setup requires fr02ValidToken from a successful Login row using saveTokenAs=fr02ValidToken');",
+                    "const parts = String(validToken).split('.');",
+                    "if (parts.length !== 3) throw new Error('FR02-H-001 setup token is not a three-segment JWT');",
+                    "const forgedHeader = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' })).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_');",
+                    "pm.variables.set('fr02ForgedToken', forgedHeader + '.' + parts[1] + '.');"
+                  ]
+                }
+              },
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('[FR02-H-001] forged alg=none JWT is rejected', function () {",
+                    "    pm.expect([401, 403], 'actual status: ' + pm.response.code).to.include(pm.response.code);",
+                    "});",
+                    "pm.test('[FR02-H-001] rejected response does not return a profile object', function () {",
+                    "    let body;",
+                    "    try { body = pm.response.json(); } catch (error) { body = undefined; }",
+                    "    if (body && typeof body === 'object') {",
+                    "        pm.expect(body).to.not.have.property('user');",
+                    "        pm.expect(body).to.not.have.property('profile');",
+                    "    }",
+                    "});",
+                    "pm.variables.unset('fr02ForgedToken');",
+                    "pm.collectionVariables.unset('fr02ValidToken');",
+                    "pm.environment.unset('fr02ValidToken');"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "X-Student-Id",
+                  "value": "{{studentId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{fr02ForgedToken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/users/me",
+                "host": [
+                  "{{baseUrl}}"
+                ],
+                "path": [
+                  "api",
+                  "users",
+                  "me"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "FR02-H-002 Step 1 - Forgot password while locked",
+            "description": "Run only after U-A is locked at recorded t0. Stores the documented resetToken in an environment variable for the next setup request.",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "let body;",
+                    "let parseError;",
+                    "try { body = pm.response.json(); } catch (error) { parseError = error; }",
+                    "pm.test('[FR02-H-002 setup] forgot-password returns documented 200 JSON response', function () {",
+                    "    pm.response.to.have.status(200);",
+                    "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                    "});",
+                    "if (!parseError) {",
+                    "    pm.test('[FR02-H-002 setup] resetToken is available for the reset step', function () {",
+                    "        pm.expect(body).to.have.property('resetToken').that.is.a('string').and.not.empty;",
+                    "    });",
+                    "    if (body && typeof body.resetToken === 'string' && body.resetToken) pm.environment.set('fr02ResetToken', body.resetToken);",
+                    "}"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "type": "text"
+                },
+                {
+                  "key": "X-Student-Id",
+                  "value": "{{studentId}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\":\"{{fr02EmailA}}\"}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/forgot-password",
+                "host": [
+                  "{{baseUrl}}"
+                ],
+                "path": [
+                  "api",
+                  "forgot-password"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "FR02-H-002 Step 2 - Reset password while locked",
+            "description": "Requires fr02ResetToken from Step 1 and a local secret fr02NewPassword. After this setup, use Login data rows to assert rejection before t0+30s and success after t0+31s.",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('[FR02-H-002 setup] password-reset operation succeeds before lock-bypass probe', function () {",
+                    "    pm.expect(pm.response.code, 'reset-password success status class').to.be.within(200, 299);",
+                    "});",
+                    "pm.environment.unset('fr02ResetToken');"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "type": "text"
+                },
+                {
+                  "key": "X-Student-Id",
+                  "value": "{{studentId}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\":\"{{fr02EmailA}}\",\"resetToken\":\"{{fr02ResetToken}}\",\"newPassword\":\"{{fr02NewPassword}}\"}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/reset-password",
+                "host": [
+                  "{{baseUrl}}"
+                ],
+                "path": [
+                  "api",
+                  "reset-password"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "FR02-H-005 Forgot-password enumeration comparison",
+            "description": "Run with exactly two ordered iteration rows: registered then unknown. Required fields: accountVariant and probeEmail. The script compares status, top-level schema and generic message; resetToken values are intentionally not compared.",
+            "event": [
+              {
+                "listen": "prerequest",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const probeEmail = pm.iterationData.get('probeEmail');",
+                    "const accountVariant = pm.iterationData.get('accountVariant');",
+                    "if (!probeEmail) throw new Error('FR02-H-005 requires probeEmail in iteration data');",
+                    "if (!['registered', 'unknown'].includes(accountVariant)) throw new Error('FR02-H-005 accountVariant must be registered or unknown');",
+                    "pm.request.body.update(JSON.stringify({ email: pm.variables.replaceIn(String(probeEmail)) }));"
+                  ]
+                }
+              },
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const variant = pm.iterationData.get('accountVariant');",
+                    "let body;",
+                    "let parseError;",
+                    "try { body = pm.response.json(); } catch (error) { parseError = error; }",
+                    "pm.test('[FR02-H-005] forgot-password response is JSON', function () {",
+                    "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                    "});",
+                    "if (!parseError) {",
+                    "    const keys = Object.keys(body).sort().join(',');",
+                    "    const message = typeof body.message === 'string' ? body.message : '';",
+                    "    pm.test('[FR02-H-005] response has no explicit account-existence field', function () {",
+                    "        ['exists', 'registered', 'userExists', 'userFound'].forEach((key) => pm.expect(body).to.not.have.property(key));",
+                    "    });",
+                    "    if (variant === 'registered') {",
+                    "        pm.test('[FR02-H-005] registered-email baseline follows documented success contract', function () {",
+                    "            pm.response.to.have.status(200);",
+                    "            pm.expect(body).to.have.property('resetToken').that.is.a('string').and.not.empty;",
+                    "        });",
+                    "        pm.collectionVariables.set('fr02H005Status', String(pm.response.code));",
+                    "        pm.collectionVariables.set('fr02H005Keys', keys);",
+                    "        pm.collectionVariables.set('fr02H005Message', message);",
+                    "    } else {",
+                    "        const baselineStatus = pm.collectionVariables.get('fr02H005Status');",
+                    "        const baselineKeys = pm.collectionVariables.get('fr02H005Keys');",
+                    "        const baselineMessage = pm.collectionVariables.get('fr02H005Message');",
+                    "        pm.test('[FR02-H-005] unknown-email response matches registered-email status and schema', function () {",
+                    "            pm.expect(baselineStatus, 'run registered row before unknown row').to.not.equal(undefined);",
+                    "            pm.expect(String(pm.response.code)).to.equal(baselineStatus);",
+                    "            pm.expect(keys).to.equal(baselineKeys);",
+                    "            pm.expect(message).to.equal(baselineMessage);",
+                    "        });",
+                    "        pm.collectionVariables.unset('fr02H005Status');",
+                    "        pm.collectionVariables.unset('fr02H005Keys');",
+                    "        pm.collectionVariables.unset('fr02H005Message');",
+                    "    }",
+                    "}"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "type": "text"
+                },
+                {
+                  "key": "X-Student-Id",
+                  "value": "{{studentId}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\":\"{{probeEmail}}\"}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/forgot-password",
+                "host": [
+                  "{{baseUrl}}"
+                ],
+                "path": [
+                  "api",
+                  "forgot-password"
+                ]
+              }
+            },
+            "response": []
+          }
+        ]
+      }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "studentId",
+      "value": "",
+      "type": "string"
     }
   ]
 }

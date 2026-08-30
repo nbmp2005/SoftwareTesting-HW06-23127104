@@ -7,7 +7,7 @@
 | Execution ID | `[RUN_ID]` |
 | Start/end time | `[ISO timestamps]` |
 | SUT commit | `[SHA]` |
-| Collection/environment | `[paths + versions]` |
+| Collection/environment | `HW06_Eshop.postman_collection.json`; sanitized environment/data file pending |
 | Newman report | `[path/link]` |
 
 ## Metrics
@@ -18,7 +18,7 @@
 | AI VALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
 | AI INVALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
 | AI INCOMPLETE | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
-| Human-added | `0` | `0` | `0` | `0` |
+| Human-added | `5` | `0` | `0` | `5` |
 | Final executable | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
 | Executed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
 | Passed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |

@@ -15,7 +15,7 @@
 | ≥35 AI-generated cases | [x] | [ ] | [ ] |
 | 100% labeled VALID/INVALID/INCOMPLETE | [ ] | [ ] | [ ] |
 | Corrections cho invalid/incomplete | [ ] | [ ] | [ ] |
-| ≥5 human-added cases + miss analysis | [ ] | [ ] | [ ] |
+| ≥5 human-added cases + miss analysis | [x] | [ ] | [ ] |
 | Postman implementation | [ ] | [ ] | [ ] |
 | Newman execution evidence | [ ] | [ ] | [ ] |
 | Bugs triaged/reported | [ ] | [ ] | [ ] |
