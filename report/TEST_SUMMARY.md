@@ -14,11 +14,11 @@
 
 | Metric | FR-02 | FR-10 | FR-15 | Total |
 | :--- | ---: | ---: | ---: | ---: |
-| AI-generated | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| AI VALID | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| AI INVALID | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| AI INCOMPLETE | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
-| Human-added | `[≥5]` | `[≥5]` | `[≥5]` | `[≥15]` |
+| AI-generated | `40` | `0` | `0` | `40` |
+| AI VALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
+| AI INVALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
+| AI INCOMPLETE | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
+| Human-added | `0` | `0` | `0` | `0` |
 | Final executable | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
 | Executed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
 | Passed | `[ ]` | `[ ]` | `[ ]` | `[ ]` |

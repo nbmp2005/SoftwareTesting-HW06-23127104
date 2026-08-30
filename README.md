@@ -9,7 +9,7 @@ Repository này chứa hồ sơ thực hiện HW06 cho ba feature đã chọn:
 
 | Pool | Feature | API family chính | Trạng thái |
 | :--- | :--- | :--- | :--- |
-| A | FR-02 – Login & account lockout | `POST /api/login` | Chưa thực thi |
+| A | FR-02 – Login & account lockout | `POST /api/login` | Đã sinh 40 AI candidates; chờ human audit/implementation/execution |
 | B | FR-10 – Order state machine | `PUT /api/admin/orders/:id/status`, `PUT /api/orders/:id/cancel` | Chưa thực thi |
 | C | FR-15 – Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | Chưa thực thi |
 
@@ -21,9 +21,9 @@ Chỉ điền số liệu từ kết quả thực tế; không suy đoán hoặc
 
 | Chỉ số | FR-02 | FR-10 | FR-15 | Tổng |
 | :--- | ---: | ---: | ---: | ---: |
-| AI-generated test cases | `[0]` | `[0]` | `[0]` | `[0]` |
-| Human-added test cases | `[0]` | `[0]` | `[0]` | `[0]` |
-| Final test cases | `[0]` | `[0]` | `[0]` | `[0]` |
+| AI-generated test cases | `40` | `0` | `0` | `40` |
+| Human-added test cases | `0` | `0` | `0` | `0` |
+| Final test cases | `[pending audit]` | `[pending]` | `[pending]` | `[pending]` |
 | Executed | `[0]` | `[0]` | `[0]` | `[0]` |
 | Passed | `[0]` | `[0]` | `[0]` | `[0]` |
 | Failed | `[0]` | `[0]` | `[0]` | `[0]` |

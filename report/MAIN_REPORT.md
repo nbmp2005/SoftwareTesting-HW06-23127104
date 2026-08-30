@@ -64,7 +64,7 @@ Each test case contains ID, source, requirement trace, technique, priority, prec
 | Inputs | `email`, `password`; headers including `Content-Type`, `X-Student-Id` |
 | Main rules | Wrong attempt increments exactly 1; locked from 3 consecutive failures; lock 30 seconds; success returns JWT and resets failures |
 | Security focus | SEC-01, SEC-02, SEC-05; enumeration, sensitive response fields |
-| Data/reset strategy | `[isolated users/reset command]` |
+| Data/reset strategy | Dedicated `U-A/U-B/U-C` fixture snapshots; deterministic seed/reset command still pending implementation |
 
 Decision table and detailed cases: [FR-02 test design](../test-cases/FR-02_LOGIN.md). Excel sheet: `[PATH/LINK]`.
 
@@ -72,9 +72,9 @@ Decision table and detailed cases: [FR-02 test design](../test-cases/FR-02_LOGIN
 
 | Generated | Partition | Boundary | Decision/state | Security | Schema |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| `[≥35]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| `40` | `14` | `7` | `15` | `7` | `4` |
 
-Prompt/output references: `[AUDIT ENTRY IDS]`.
+Counts are non-exclusive by technique. Prompt/output reference: `AI_AUDIT_REPORT.md` Interaction 005; Interaction 004 records the interrupted first attempt. Seven ambiguities (`ASM-FR02-01`–`07`) remain explicit in the test design.
 
 ### 5.3 Human audit and corrections
 
@@ -82,11 +82,11 @@ Prompt/output references: `[AUDIT ENTRY IDS]`.
 | ---: | ---: | ---: | ---: | ---: |
 | `[ ]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
 
-Key corrections: `[specific examples and reasons]`.
+Human audit has not started. No VALID/INVALID/INCOMPLETE decision or correction is claimed yet.
 
 ### 5.4 Human extensions
 
-At least five cases with rationale: `[TC IDs]`. Explain what AI missed and why: `[analysis]`.
+Human-added count is currently `0`. The student must add at least five original cases with `Why AI missed` analysis after auditing the AI candidates.
 
 ### 5.5 Execution and findings
 
