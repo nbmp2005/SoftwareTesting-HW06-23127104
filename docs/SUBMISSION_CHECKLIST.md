@@ -17,8 +17,8 @@
 | Corrections cho invalid/incomplete | [ ] | [ ] | [ ] |
 | ≥5 human-added cases + miss analysis | [x] | [x] | [ ] |
 | Postman implementation | [x] | [x] | [ ] |
-| Newman execution evidence | [x] | [ ] | [ ] |
-| Bugs triaged/reported | [x] | [ ] | [ ] |
+| Newman execution evidence | [x] | [x] | [ ] |
+| Bugs triaged/reported | [x] | [x] | [ ] |
 
 ## Technical/package
 

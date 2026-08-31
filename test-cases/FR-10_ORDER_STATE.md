@@ -10,7 +10,7 @@
 | Generated set | 47 unique AI candidates (`FR10-AI-001`–`FR10-AI-047`) |
 | Human extension set | 5 student-authored cases (`FR10-H-001`–`FR10-H-005`), refined with explicit contract assumptions |
 | Lifecycle | Raw AI output awaiting student audit; audit fields are intentionally blank |
-| Execution | All cases are `NOT RUN`; no Postman/Newman evidence is claimed |
+| Execution | Tier-A Newman evidence reconciled: `8 PASS`, `40 FAIL`, `4 BLOCKED`; mapping `52/52` TC IDs |
 
 ## 2. Contract inventory
 
@@ -113,15 +113,15 @@ Candidates that depend on these assumptions count as generated AI candidates, bu
 | `FR10-AI-035` | `AI` | FR-10; FR-12; SEC-03; API §6.2 | Security, role escalation | P0 | Authenticated `USR-A`; `O-P=pending` | Admin API target `confirmed` with normal-user token | `403` per ASM-05; no admin data; state unchanged | Restore snapshots |  |  |  | `FAIL` |
 | `FR10-AI-036` | `AI` | FR-10; FR-12; SEC-02/03; API §6.2 | Security, auth | P0 | No token; `O-P=pending` | Admin API target `confirmed`, no Authorization | `401`; generic error; no mutation | Restore snapshots |  |  |  | `PASS` |
 | `FR10-AI-037` | `AI` | FR-10; FR-12; SEC-02/03; API §6.2 | Security, auth | P0 | Invalid/expired token; `O-P=pending` | Admin API target `confirmed` with invalid bearer | `401`; generic error; no mutation | Restore snapshots |  |  |  | `FAIL` |
-| `FR10-AI-038` | `AI` | FR-10; FR-18; API §6.2 | EP, resource ID | P1 | `ADM-A`; ID `999999999` absent | Admin API target `confirmed` | `404` per ASM-04; JSON error; no order or sentinel changes | Preserve seed; verify absent ID |  |  |  | `FAIL` |
-| `FR10-AI-039` | `AI` | FR-10; FR-18; API §6.2 | EP, resource ID | P1 | `ADM-A`; malformed ID `abc` | `PUT /api/admin/orders/abc/status`; target `confirmed` | `400` per ASM-04; JSON error; no mutation | Verify all fixtures unchanged |  |  |  | `FAIL` |
-| `FR10-AI-040` | `AI` | FR-10; API §4.6 | EP, resource ID | P1 | `USR-A`; ID `999999999` absent | `PUT /api/orders/999999999/cancel` | `404` per ASM-04; generic error consistent with ownership policy; no mutation | Preserve seed |  |  |  | `FAIL` |
+| `FR10-AI-038` | `AI` | FR-10; FR-18; API §6.2 | EP, resource ID | P1 | `ADM-A`; ID `999999999` absent | Admin API target `confirmed` | `404` per ASM-04; JSON error; no order or sentinel changes | Preserve seed; verify absent ID |  |  |  | `BLOCKED` |
+| `FR10-AI-039` | `AI` | FR-10; FR-18; API §6.2 | EP, resource ID | P1 | `ADM-A`; malformed ID `abc` | `PUT /api/admin/orders/abc/status`; target `confirmed` | `400` per ASM-04; JSON error; no mutation | Verify all fixtures unchanged |  |  |  | `BLOCKED` |
+| `FR10-AI-040` | `AI` | FR-10; API §4.6 | EP, resource ID | P1 | `USR-A`; ID `999999999` absent | `PUT /api/orders/999999999/cancel` | `404` per ASM-04; generic error consistent with ownership policy; no mutation | Preserve seed |  |  |  | `BLOCKED` |
 | `FR10-AI-041` | `AI` | FR-10; FR-18; API §6.2 | EP, required field | P0 | `ADM-A`; `O-P=pending` | Admin API with body `{}` | `400` per ASM-04; validation error names no sensitive data; state unchanged | Restore snapshots |  |  |  | `PASS` |
 | `FR10-AI-042` | `AI` | FR-10; FR-18; API §6.2 | EP, null | P1 | `ADM-A`; `O-P=pending` | Admin API body `{"status":null}` | `400`; schema/validation error; no mutation | Restore snapshots |  |  |  | `PASS` |
 | `FR10-AI-043` | `AI` | FR-10; FR-18; API §6.2 | EP, enum | P0 | `ADM-A`; `O-P=pending` | Admin API body `{"status":"refunded"}` | `400`; allowed-domain validation error; no mutation | Restore snapshots |  |  |  | `PASS` |
 | `FR10-AI-044` | `AI` | FR-10; ASM-FR10-06 | Concurrency, atomicity | P0 | `ADM-A` and owning `USR-A`; one `O-P=pending` | Synchronize admin `pending→confirmed` and user cancel requests | Responses/state match a legal serial order per ASM-06: cancel-first gives one commit; confirm-first may give two legal commits; final `canceled`, no lost/hybrid/duplicate mutation, sentinel unchanged | Dedicated order, barrier, DB snapshot restore |  |  |  | `PASS` |
 | `FR10-AI-045` | `AI` | FR-10; FR-18; API §6.2 | Replay, idempotency | P1 | `ADM-A`; `O-S=shipping` | Send identical `shipping→delivered` request twice sequentially | First `200`; second `409` per ASM-02/03; final `delivered`; only one transition side effect/version increment | Dedicated order; restore snapshot |  |  |  | `FAIL` |
-| `FR10-AI-046` | `AI` | FR-10; SEC-05; API §6.2 | Security, injection | P0 | `ADM-A`; sentinel fixtures recorded | `PUT /api/admin/orders/1%20OR%201=1/status`; target `confirmed` | `400` per ASM-04; generic error; no order changes and no multi-row update; behavioral probe does not prove parameterization | Restore/compare all fixture snapshots |  |  |  | `FAIL` |
+| `FR10-AI-046` | `AI` | FR-10; SEC-05; API §6.2 | Security, injection | P0 | `ADM-A`; sentinel fixtures recorded | `PUT /api/admin/orders/1%20OR%201=1/status`; target `confirmed` | `400` per ASM-04; generic error; no order changes and no multi-row update; behavioral probe does not prove parameterization | Restore/compare all fixture snapshots |  |  |  | `BLOCKED` |
 | `FR10-AI-047` | `AI` | FR-10; SEC-05; API §6.2 | Security, injection | P0 | `ADM-A`; `O-P=pending` | Admin API body `{"status":"confirmed' OR '1'='1"}` | `400` per ASM-04; no SQL/internal detail; no state or multi-row mutation; behavioral probe only | Restore/compare target and sentinel |  |  |  | `PASS` |
 
 ## 7. Human-added cases
@@ -168,17 +168,33 @@ The student explicitly supplied these five extensions. AI refinement only made t
 | :--- | :--- | :--- | :--- |
 | All 52 TC IDs | Folder `FR-10 Order State Machine` → request `FR-10 Mutation Router (Data-Driven)` | One row per TC in `FR10_data.csv`; scripts read `tcId`, method, path, body, auth and oracle via `pm.iterationData.get()` | Structurally implemented; assumptions `ASM-FR10-01`–`09` still require review |
 | Persisted state/no side effect | Request `FR-10 Persisted State Verification (Data-Driven)` | `verifyOrderId` + `expectedState` | Requires admin list response to expose an order array and deterministic fixture reset |
-| Replay/near-valid second request | `FR10-AI-045`, `FR10-H-002` in Mutation Router | `secondaryBody` + `secondaryExpectedStatus` | Executed through an explicit `pm.sendRequest` callback; not yet run |
+| Replay/near-valid second request | `FR10-AI-045`, `FR10-H-002` in Mutation Router | `secondaryBody` + `secondaryExpectedStatus` | Executed in the reconciled Newman run; TC-level result is recorded above |
 | Concurrency | `FR10-AI-044`, `FR10-H-004` in Mutation Router | `racePath1/2`, bodies, auth modes and allowed status pairs | Two asynchronous `pm.sendRequest` calls; reliable race timing still depends on runner/SUT and a barrier-capable fixture |
 | Secrets/fixtures | Empty collection variables `fr10AdminToken`, `fr10UserAToken`, `fr10UserBToken`, five state-specific order IDs and a sentinel | Runtime values must be supplied locally | No token/current secret value is committed |
 
-The implementation is a runnable mapping scaffold, not execution evidence. Before Newman, the student must provide tokens/fixture IDs, restore each named state before every CSV iteration, confirm unresolved HTTP/schema assumptions and capture real `X-Student-Id` evidence.
+The implementation was exercised by the reconciled Newman run. The artifact proves TC/assertion outcomes, but it does not by itself prove console-level `X-Student-Id` capture, resolve contract assumptions, or establish genuine product bugs.
 
-## 10. Quality-gate result
+## 10. Newman execution reconciliation
 
-- Structural count: 47 unique AI IDs plus 5 unique HUMAN IDs; all 52 rows have `Execution/evidence=NOT RUN`.
+| Item | Reconciled evidence |
+| :--- | :--- |
+| Requested artifact | `newman-run-report.json` was not present in the workspace |
+| Authoritative artifact used | `newman-report-FR10.json` (Tier A, retained unchanged) |
+| SHA-256 | `1BAFF84BD829F0BCAC5D6BE2FF72673441CEFF7B8136A913E285D196991691F3` |
+| Run window / host | `2026-08-31T16:36:46.594Z`–`2026-08-31T16:36:54.546Z`; `http://localhost:3000` |
+| Raw run counts | 52 iterations; 110 request executions; 481 assertions; 59 failed assertions |
+| Mapping coverage | 52/52 unique design TC IDs; 0 orphan executions |
+| TC outcomes | 8 PASS; 40 FAIL; 4 BLOCKED; executed under repository convention = 48 |
+
+- PASS: `FR10-AI-033`, `036`, `041`–`044`, `047`, `FR10-H-002`.
+- BLOCKED: `FR10-AI-038`–`040`, `046`; their intended no-side-effect/sentinel oracle could not be evaluated because the verification fixture ID was unresolved. `FR10-AI-039` and `046` also observed `404` where the working oracle expected `400`, but they remain BLOCKED until post-state verification is runnable.
+- FAIL: the remaining 40 mapped IDs. These are assertion-level oracle violations, not 40 confirmed product bugs. Preliminary patterns include `409` versus `400` contract ambiguity, response-schema/test-script mismatch, authorization/state-integrity candidates, and concurrency/parser-policy questions; bug counts remain pending formal triage and reproduction.
+
+## 11. Quality-gate result
+
+- Structural count: 47 unique AI IDs plus 5 unique HUMAN IDs; all 52 rows map to the authoritative run, with 8 PASS, 40 FAIL and 4 BLOCKED.
 - Full state closure: 25/25 admin matrix cells and 5/5 owner-cancel states are mapped.
-- No audit label, correction, execution result, bug, screenshot, URL or commit SHA was invented.
-- Remaining gaps: nine contract decisions (`ASM-FR10-01`–`09`), deterministic fixture/reset implementation, runtime environment values, reliable duplicate-key/race transport, real execution evidence and human audit of the 47 AI candidates.
+- No audit label, correction, genuine bug, screenshot, URL or commit SHA was inferred from assertion failures.
+- Remaining gaps: nine contract decisions (`ASM-FR10-01`–`09`), repair/rerun of four blocked verification fixtures, formal failure triage/reproduction, console header evidence and human audit of the 47 AI candidates.
 
-**Generation status: COMPLETE.** The ≥35 AI-candidate target is met with 47 semantically distinct scenarios. This does not mean the human-audit, implementation or execution stages are complete.
+**Generation status: COMPLETE; execution reconciliation: COMPLETE for this artifact.** Human audit, blocked-case reruns and bug triage remain incomplete.

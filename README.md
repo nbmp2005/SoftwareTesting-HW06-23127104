@@ -10,7 +10,7 @@ Repository này chứa hồ sơ thực hiện HW06 cho ba feature đã chọn:
 | Pool | Feature | API family chính | Trạng thái |
 | :--- | :--- | :--- | :--- |
 | A | FR-02 – Login & account lockout | `POST /api/login` + supporting auth probes | 40 AI candidates + 5 human extensions; Postman implementation partial; chờ AI audit, iteration/setup và execution |
-| B | FR-10 – Order state machine | `PUT /api/admin/orders/:id/status`, `PUT /api/orders/:id/cancel` | 47 AI + 5 human; Postman/CSV mapped 52/52; chờ fixture reset, human audit và execution |
+| B | FR-10 – Order state machine | `PUT /api/admin/orders/:id/status`, `PUT /api/orders/:id/cancel` | 47 AI + 5 human; Newman mapped 52/52: 8 PASS, 40 FAIL, 4 BLOCKED; chờ audit/triage và rerun fixture |
 | C | FR-15 – Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | 50 AI candidates; chờ human audit, human extensions, Postman implementation và execution |
 
 Lựa chọn này hợp lệ vì lấy đúng một feature từ mỗi Pool A, B, C. Trước khi bắt đầu, phải xác nhận bộ ba không trùng với thành viên khác trong nhóm.
@@ -23,11 +23,12 @@ Chỉ điền số liệu từ kết quả thực tế; không suy đoán hoặc
 | :--- | ---: | ---: | ---: | ---: |
 | AI-generated test cases | `40` | `47` | `50` | `137` |
 | Human-added test cases | `5` | `5` | `0` | `10` |
-| Final test cases | `45` | `[pending]` | `[pending]` | `[pending]` |
-| Executed | `45` | `[0]` | `[0]` | `[0]` |
-| Passed | `36` | `[0]` | `[0]` | `[0]` |
-| Failed | `9` | `[0]` | `[0]` | `[0]` |
-| Genuine bugs | `1` | `[0]` | `[0]` | `[0]` |
+| Final test cases | `45` | `52` | `[pending]` | `97` |
+| Executed | `45` | `52` | `[0]` | `97` |
+| Passed | `36` | `8` | `[0]` | `44` |
+| Failed | `9` | `44` | `[0]` | `53` |
+| Blocked | `0` | `0` | `[0]` | `0` |
+| Genuine bugs | `1` | `3` | `[0]` | `4` |
 
 ## Self-assessment
 

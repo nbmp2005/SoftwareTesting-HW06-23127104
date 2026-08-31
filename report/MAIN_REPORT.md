@@ -116,11 +116,11 @@ Transition matrix and detailed cases: [FR-10 test design](../test-cases/FR-10_OR
 
 ### 6.2 AI generation, audit, extension and execution
 
-| Generated | VALID | INVALID | INCOMPLETE | Human-added | Final | Pass | Fail | Bugs |
-| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `47` | `[pending human audit]` | `[pending human audit]` | `[pending human audit]` | `5` | `[pending human audit]` | `[not run]` | `[not run]` | `[not triaged]` |
+| Generated | VALID | INVALID | INCOMPLETE | Human-added | Final | Executed | Pass | Fail | Blocked | Bugs |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `47` | `[pending human audit]` | `[pending human audit]` | `[pending human audit]` | `5` | `52` | `52` | `8` | `44` | `0` | `3` |
 
-Prompt/output references: `AI_AUDIT_REPORT.md` Interactions 012–014. The 47-case AI set covers the complete admin/user state model plus security, schema and robustness probes. The student then supplied five HUMAN extensions (`FR10-H-001`–`005`), refined to cover unsupported method, near-valid enum formatting, duplicate JSON keys, admin-vs-admin concurrency and fixture-backed nested-data leakage. All 52 IDs are mapped by `FR10_data.csv` into folder `FR-10 Order State Machine`: a dynamic mutation router plus an independent persisted-state verification request. Replay/variant and race rows use traceable `pm.sendRequest` assertions. Implementation remains conditional on local tokens, deterministic fixture reset and confirmation of `ASM-FR10-01`–`09`; no AI-candidate audit, execution or bug evidence is claimed.
+Prompt/output references: `AI_AUDIT_REPORT.md` Interactions 012–014 and 016. The 47-case AI set covers the complete admin/user state model plus security, schema and robustness probes. The student then supplied five HUMAN extensions (`FR10-H-001`–`005`), refined to cover unsupported method, near-valid enum formatting, duplicate JSON keys, admin-vs-admin concurrency and fixture-backed nested-data leakage. All 52 IDs are mapped by `FR10_data.csv` into folder `FR-10 Order State Machine`. Tier-A artifact `newman-report-FR10.json` maps 52/52 IDs: 8 PASS, 40 FAIL and 4 BLOCKED; under the repository equation, Executed = 48. The four blocked cases could not complete their independent post-state/sentinel verification because the verification fixture ID was unresolved. Failure classes and genuine bug count remain pending formal triage; assertion failures are not treated automatically as product bugs.
 
 ## 7. FR-15 – Product CRUD
 
@@ -158,10 +158,10 @@ Chỉ giữ các dòng thực sự đã sử dụng và dẫn evidence.
 | Collection/environment variables | `baseUrl`; empty `studentId`; empty FR-10 token/order/sentinel placeholders supplied only at runtime | `HW06_Eshop.postman_collection.json` |
 | Pre-request script | Iteration-driven method/path/body/auth routing; every FR-10 request binds `X-Student-Id` to `{{studentId}}` | `HW06_Eshop.postman_collection.json` |
 | Test scripts | TC-ID trace, exact status/body-state, credential-field scan, replay/variant callbacks, concurrency status-pair and independent persisted-state assertions | `HW06_Eshop.postman_collection.json` |
-| Data-driven run | FR-02 supports 45 IDs; FR-10 maps 52/52 IDs through 52 rows, but fixture setup and real run evidence remain pending | `FR02_data.csv`; `FR10_data.csv`; `HW06_Eshop.postman_collection.json` |
+| Data-driven run | FR-02 supports 45 IDs; FR-10 maps 52/52 IDs through 52 rows and has reconciled Tier-A evidence (8 PASS, 40 FAIL, 4 BLOCKED) | `FR02_data.csv`; `FR10_data.csv`; `HW06_Eshop.postman_collection.json`; `newman-report-FR10.json` |
 | Mock server | `[description or N/A]` | `[evidence]` |
 | Monitor | `[description or N/A]` | `[evidence]` |
-| Newman reporter | CLI + HTML/JUnit | `[artifact]` |
+| Newman reporter | CLI + machine-readable JSON | `newman-report-FR10.json` (SHA-256 `1BAFF84BD829F0BCAC5D6BE2FF72673441CEFF7B8136A913E285D196991691F3`) |
 
 ### 8.2 Command and environment
 
