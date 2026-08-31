@@ -12,11 +12,11 @@
 
 | Hạng mục | FR-02 | FR-10 | FR-15 |
 | :--- | :---: | :---: | :---: |
-| ≥35 AI-generated cases | [x] | [ ] | [ ] |
+| ≥35 AI-generated cases | [x] | [x] | [ ] |
 | 100% labeled VALID/INVALID/INCOMPLETE | [ ] | [ ] | [ ] |
 | Corrections cho invalid/incomplete | [ ] | [ ] | [ ] |
-| ≥5 human-added cases + miss analysis | [x] | [ ] | [ ] |
-| Postman implementation | [x] | [ ] | [ ] |
+| ≥5 human-added cases + miss analysis | [x] | [x] | [ ] |
+| Postman implementation | [x] | [x] | [ ] |
 | Newman execution evidence | [x] | [ ] | [ ] |
 | Bugs triaged/reported | [x] | [ ] | [ ] |
 

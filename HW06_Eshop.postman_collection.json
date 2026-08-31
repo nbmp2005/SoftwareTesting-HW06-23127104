@@ -495,6 +495,299 @@
             "response": []
           }
         ]
+      },
+      {
+        "name": "FR-10 Order State Machine",
+        "description": "Data-driven implementation for FR10-AI-001..047 and FR10-H-001..005. Run with FR10_data.csv. Before every iteration, restore the named order fixtures to their documented states. The collection does not fabricate fixture reset, concurrency support, or execution evidence.",
+        "item": [
+          {
+            "name": "FR-10 Mutation Router (Data-Driven)",
+            "description": "Routes method, path, raw JSON body and authentication from iteration data. Replay/near-enum cases use secondaryBody; race cases issue two asynchronous mutation requests and validate the allowed status pair.",
+            "event": [
+              {
+                "listen": "prerequest",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const value = (key) => pm.iterationData.get(key);",
+                    "const tcId = String(value('tcId') || '').trim();",
+                    "const scenario = String(value('scenario') || 'normal').trim();",
+                    "const requestMethod = String(value('requestMethod') || '').trim().toUpperCase();",
+                    "const requestPath = String(value('requestPath') || '').trim();",
+                    "const requestBody = value('requestBody');",
+                    "const authMode = String(value('authMode') || '').trim();",
+                    "",
+                    "pm.variables.set('fr10TcId', tcId);",
+                    "pm.variables.set('fr10Scenario', scenario);",
+                    "pm.variables.set('fr10AuthMode', authMode);",
+                    "pm.request.method = requestMethod;",
+                    "pm.request.url = pm.variables.replaceIn('{{baseUrl}}' + requestPath);",
+                    "if (pm.request.body) pm.request.body.update(pm.variables.replaceIn(requestBody == null ? '' : String(requestBody)));",
+                    "pm.request.headers.upsert({ key: 'X-Student-Id', value: '{{studentId}}' });",
+                    "if (requestBody !== undefined && requestBody !== null && String(requestBody) !== '') pm.request.headers.upsert({ key: 'Content-Type', value: 'application/json' });",
+                    "",
+                    "const tokenKeyByMode = { admin: 'fr10AdminToken', user: 'fr10UserAToken', otherUser: 'fr10UserBToken' };",
+                    "const tokenKey = tokenKeyByMode[authMode];",
+                    "const token = tokenKey ? (pm.environment.get(tokenKey) || pm.collectionVariables.get(tokenKey)) : '';",
+                    "if (authMode === 'missing') {",
+                    "    pm.request.headers.remove('Authorization');",
+                    "} else if (authMode === 'invalid') {",
+                    "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer invalid.fixture.token' });",
+                    "} else {",
+                    "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + (token || '') });",
+                    "}",
+                    "pm.variables.set('fr10AuthFixturePresent', String(authMode === 'missing' || authMode === 'invalid' || Boolean(token)));",
+                    "if (!tcId) console.warn('FR-10 iteration row has no tcId; traceability assertion will fail.');"
+                  ]
+                }
+              },
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const iteration = (key) => pm.iterationData.get(key);",
+                    "const tcId = String(iteration('tcId') || '').trim();",
+                    "const scenario = String(iteration('scenario') || 'normal').trim();",
+                    "const expectedStatus = Number(iteration('expectedStatus'));",
+                    "const expectedBodyStatus = String(iteration('expectedBodyStatus') || '').trim();",
+                    "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
+                    "",
+                    "pm.test(label('iteration row has a traceable FR-10 TC ID'), function () {",
+                    "    pm.expect(tcId).to.match(/^FR10-(?:AI|H)-\\d{3}$/);",
+                    "});",
+                    "pm.test(label('required authentication fixture is available'), function () {",
+                    "    pm.expect(pm.variables.get('fr10AuthFixturePresent')).to.equal('true');",
+                    "});",
+                    "pm.test(label('response status matches the design oracle'), function () {",
+                    "    pm.expect(Number.isInteger(expectedStatus), 'expectedStatus must be an integer').to.equal(true);",
+                    "    pm.response.to.have.status(expectedStatus);",
+                    "});",
+                    "",
+                    "let responseBody;",
+                    "let responseParseError;",
+                    "const responseText = pm.response.text();",
+                    "if (responseText) {",
+                    "    try { responseBody = pm.response.json(); } catch (error) { responseParseError = error; }",
+                    "}",
+                    "pm.test(label('response is valid JSON with a JSON content type'), function () {",
+                    "    pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/i);",
+                    "    pm.expect(responseText, 'response body must not be empty').to.not.equal('');",
+                    "    pm.expect(responseParseError, responseParseError && responseParseError.message).to.equal(undefined);",
+                    "});",
+                    "",
+                    "function collectForbiddenKeys(value, path, matches) {",
+                    "    if (Array.isArray(value)) return value.forEach((item, index) => collectForbiddenKeys(item, path + '[' + index + ']', matches));",
+                    "    if (!value || typeof value !== 'object') return;",
+                    "    Object.keys(value).forEach((key) => {",
+                    "        const normalized = key.toLowerCase().replace(/[_-]/g, '');",
+                    "        if (['password', 'passwordhash', 'resettoken', 'token', 'accesstoken', 'authorization'].includes(normalized)) matches.push(path ? path + '.' + key : key);",
+                    "        collectForbiddenKeys(value[key], path ? path + '.' + key : key, matches);",
+                    "    });",
+                    "}",
+                    "pm.test(label('response exposes no credential fields'), function () {",
+                    "    pm.expect(responseBody, 'JSON body must parse before sensitive-field scan').to.not.equal(undefined);",
+                    "    const matches = [];",
+                    "    collectForbiddenKeys(responseBody, '', matches);",
+                    "    pm.expect(matches, 'forbidden fields: ' + matches.join(', ')).to.be.empty;",
+                    "});",
+                    "",
+                    "if (expectedBodyStatus) {",
+                    "    pm.test(label('success body reports the expected order status'), function () {",
+                    "        pm.expect(responseBody, 'JSON body must parse').to.not.equal(undefined);",
+                    "        const order = responseBody.order || responseBody.data || responseBody;",
+                    "        pm.expect(order).to.be.an('object');",
+                    "        pm.expect(order.status).to.equal(expectedBodyStatus);",
+                    "    });",
+                    "}",
+                    "",
+                    "function tokenFor(mode) {",
+                    "    const keys = { admin: 'fr10AdminToken', user: 'fr10UserAToken', otherUser: 'fr10UserBToken' };",
+                    "    const key = keys[mode];",
+                    "    return key ? (pm.environment.get(key) || pm.collectionVariables.get(key) || '') : '';",
+                    "}",
+                    "function requestHeaders(mode) {",
+                    "    const headers = { 'Content-Type': 'application/json', 'X-Student-Id': pm.variables.replaceIn('{{studentId}}') };",
+                    "    if (mode === 'invalid') headers.Authorization = 'Bearer invalid.fixture.token';",
+                    "    else if (mode !== 'missing') headers.Authorization = 'Bearer ' + tokenFor(mode);",
+                    "    return headers;",
+                    "}",
+                    "",
+                    "const secondaryBody = iteration('secondaryBody');",
+                    "if (scenario !== 'race' && secondaryBody !== undefined && secondaryBody !== null && String(secondaryBody) !== '') {",
+                    "    const secondaryExpected = Number(iteration('secondaryExpectedStatus'));",
+                    "    pm.sendRequest({",
+                    "        url: pm.variables.replaceIn('{{baseUrl}}' + String(iteration('requestPath'))),",
+                    "        method: String(iteration('requestMethod')).toUpperCase(),",
+                    "        header: requestHeaders(String(iteration('authMode'))),",
+                    "        body: { mode: 'raw', raw: pm.variables.replaceIn(String(secondaryBody)) }",
+                    "    }, function (error, response) {",
+                    "        pm.test(label('secondary request status matches replay/variant oracle'), function () {",
+                    "            pm.expect(error, error && error.message).to.not.exist;",
+                    "            pm.expect(response.code).to.equal(secondaryExpected);",
+                    "        });",
+                    "    });",
+                    "}",
+                    "",
+                    "if (scenario === 'race') {",
+                    "    const requests = [1, 2].map((index) => ({",
+                    "        url: pm.variables.replaceIn('{{baseUrl}}' + String(iteration('racePath' + index))),",
+                    "        method: 'PUT',",
+                    "        header: requestHeaders(String(iteration('raceAuth' + index))),",
+                    "        body: String(iteration('raceBody' + index) || '') ? { mode: 'raw', raw: pm.variables.replaceIn(String(iteration('raceBody' + index))) } : undefined",
+                    "    }));",
+                    "    const results = [];",
+                    "    requests.forEach((request, index) => pm.sendRequest(request, function (error, response) {",
+                    "        results[index] = { error: error, code: response && response.code };",
+                    "        if (results.filter(Boolean).length !== 2) return;",
+                    "        pm.test(label('concurrent requests match an allowed serializable status pair'), function () {",
+                    "            pm.expect(results[0].error, results[0].error && results[0].error.message).to.not.exist;",
+                    "            pm.expect(results[1].error, results[1].error && results[1].error.message).to.not.exist;",
+                    "            const actualPair = results[0].code + '+' + results[1].code;",
+                    "            const allowedPairs = String(iteration('raceAllowedPairs') || '').split('|').filter(Boolean);",
+                    "            pm.expect(allowedPairs).to.include(actualPair);",
+                    "        });",
+                    "    }));",
+                    "}"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "PUT",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json",
+                  "type": "text"
+                },
+                {
+                  "key": "X-Student-Id",
+                  "value": "{{studentId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{fr10AdminToken}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/admin/orders/{{fr10OrderPendingId}}/status",
+                "host": [
+                  "{{baseUrl}}"
+                ],
+                "path": [
+                  "api",
+                  "admin",
+                  "orders",
+                  "{{fr10OrderPendingId}}",
+                  "status"
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "FR-10 Persisted State Verification (Data-Driven)",
+            "description": "Uses the admin order list as an independent follow-up read and verifies expectedState for verifyOrderId after each mutation/race row.",
+            "event": [
+              {
+                "listen": "prerequest",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const tcId = String(pm.iterationData.get('tcId') || '').trim();",
+                    "const verifyOrderId = pm.variables.replaceIn(String(pm.iterationData.get('verifyOrderId') || ''));",
+                    "const expectedState = pm.variables.replaceIn(String(pm.iterationData.get('expectedState') || ''));",
+                    "const adminToken = pm.environment.get('fr10AdminToken') || pm.collectionVariables.get('fr10AdminToken') || '';",
+                    "pm.variables.set('fr10TcId', tcId);",
+                    "pm.variables.set('fr10VerifyOrderId', verifyOrderId);",
+                    "pm.variables.set('fr10ExpectedState', expectedState);",
+                    "pm.variables.set('fr10AdminFixturePresent', String(Boolean(adminToken)));",
+                    "pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + adminToken });",
+                    "pm.request.headers.upsert({ key: 'X-Student-Id', value: '{{studentId}}' });"
+                  ]
+                }
+              },
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "const tcId = pm.variables.get('fr10TcId') || '';",
+                    "const verifyOrderId = pm.variables.get('fr10VerifyOrderId') || '';",
+                    "const expectedState = pm.variables.get('fr10ExpectedState') || '';",
+                    "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
+                    "",
+                    "pm.test(label('verification inputs and admin fixture are resolved'), function () {",
+                    "    pm.expect(tcId).to.match(/^FR10-(?:AI|H)-\\d{3}$/);",
+                    "    pm.expect(pm.variables.get('fr10AdminFixturePresent')).to.equal('true');",
+                    "    pm.expect(verifyOrderId).to.not.equal('').and.not.match(/{{.+}}/);",
+                    "    pm.expect(expectedState).to.not.equal('').and.not.match(/{{.+}}/);",
+                    "});",
+                    "pm.test(label('verification read succeeds'), function () {",
+                    "    pm.response.to.have.status(200);",
+                    "    pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/i);",
+                    "});",
+                    "",
+                    "let body;",
+                    "let parseError;",
+                    "try { body = pm.response.json(); } catch (error) { parseError = error; }",
+                    "pm.test(label('verification response is valid JSON'), function () {",
+                    "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                    "});",
+                    "pm.test(label('persisted order state matches the post-state oracle'), function () {",
+                    "    pm.expect(body, 'verification JSON must parse').to.not.equal(undefined);",
+                    "    const orders = Array.isArray(body) ? body : (Array.isArray(body.orders) ? body.orders : body.data);",
+                    "    pm.expect(orders, 'admin order list must be an array or expose orders/data array').to.be.an('array');",
+                    "    const order = orders.find((item) => String(item.id) === String(verifyOrderId));",
+                    "    pm.expect(order, 'verifyOrderId must exist in admin order list').to.be.an('object');",
+                    "    const allowedStates = expectedState.split('|').map((state) => state.trim()).filter(Boolean);",
+                    "    pm.expect(allowedStates).to.include(String(order.status));",
+                    "});"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "X-Student-Id",
+                  "value": "{{studentId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{fr10AdminToken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/admin/orders",
+                "host": [
+                  "{{baseUrl}}"
+                ],
+                "path": [
+                  "api",
+                  "admin",
+                  "orders"
+                ]
+              }
+            },
+            "response": []
+          }
+        ]
       }
   ],
   "variable": [
@@ -505,6 +798,56 @@
     },
     {
       "key": "studentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10AdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10UserAToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10UserBToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderPendingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderConfirmedId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderShippingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderDeliveredId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderCanceledId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10SentinelOrderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10SentinelState",
       "value": "",
       "type": "string"
     }

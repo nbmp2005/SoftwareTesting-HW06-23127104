@@ -110,7 +110,7 @@ Evidence: `[NEWMAN SECTION/SCREENSHOT/COMMIT]`. Findings: `[summary]`.
 | Final states | `delivered`, `canceled` |
 | Actor rule | User cancels only pending/confirmed; admin follows state machine |
 | Security focus | SEC-02, SEC-03, IDOR/ownership |
-| Fixture strategy | `[orders seeded/created in each state]` |
+| Fixture strategy | Named fixtures `O-P/O-CF/O-S/O-D/O-X` plus unrelated sentinel `O-U`; deterministic seed/reset implementation remains pending |
 
 Transition matrix and detailed cases: [FR-10 test design](../test-cases/FR-10_ORDER_STATE.md).
 
@@ -118,9 +118,9 @@ Transition matrix and detailed cases: [FR-10 test design](../test-cases/FR-10_OR
 
 | Generated | VALID | INVALID | INCOMPLETE | Human-added | Final | Pass | Fail | Bugs |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `[≥35]` | `[ ]` | `[ ]` | `[ ]` | `[≥5]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| `47` | `[pending human audit]` | `[pending human audit]` | `[pending human audit]` | `5` | `[pending human audit]` | `[not run]` | `[not run]` | `[not triaged]` |
 
-Prompt/output references: `[AUDIT ENTRY IDS]`. Key corrections: `[details]`. Human-missed analysis: `[details]`. Evidence: `[links/paths]`.
+Prompt/output references: `AI_AUDIT_REPORT.md` Interactions 012–014. The 47-case AI set covers the complete admin/user state model plus security, schema and robustness probes. The student then supplied five HUMAN extensions (`FR10-H-001`–`005`), refined to cover unsupported method, near-valid enum formatting, duplicate JSON keys, admin-vs-admin concurrency and fixture-backed nested-data leakage. All 52 IDs are mapped by `FR10_data.csv` into folder `FR-10 Order State Machine`: a dynamic mutation router plus an independent persisted-state verification request. Replay/variant and race rows use traceable `pm.sendRequest` assertions. Implementation remains conditional on local tokens, deterministic fixture reset and confirmation of `ASM-FR10-01`–`09`; no AI-candidate audit, execution or bug evidence is claimed.
 
 ## 7. FR-15 – Product CRUD
 
@@ -154,11 +154,11 @@ Chỉ giữ các dòng thực sự đã sử dụng và dẫn evidence.
 | Feature | Use | Evidence |
 | :--- | :--- | :--- |
 | Workspace | `[description]` | `[URL/screenshot]` |
-| Collection/folders | FR-02 `Login` request and `FR-02 Human Extensions` support folder | `HW06_Eshop.postman_collection.json` |
-| Collection/environment variables | `baseUrl`; empty `studentId` placeholder (value must be supplied locally) | `HW06_Eshop.postman_collection.json` |
-| Pre-request script | Optional iteration-driven method/content-type overrides; `X-Student-Id` is bound to `{{studentId}}` | `HW06_Eshop.postman_collection.json` |
-| Test scripts | TC-ID trace, status/body oracle, sensitive-field scan, JWT `alg=none` probe and forgot-password differential comparison | `HW06_Eshop.postman_collection.json` |
-| Data-driven run | Script contract supports 40 AI and 5 human IDs; iteration files and run evidence pending | `HW06_Eshop.postman_collection.json` |
+| Collection/folders | FR-02 `Login` + human support; FR-10 `FR-10 Order State Machine` with mutation and persisted-state requests | `HW06_Eshop.postman_collection.json` |
+| Collection/environment variables | `baseUrl`; empty `studentId`; empty FR-10 token/order/sentinel placeholders supplied only at runtime | `HW06_Eshop.postman_collection.json` |
+| Pre-request script | Iteration-driven method/path/body/auth routing; every FR-10 request binds `X-Student-Id` to `{{studentId}}` | `HW06_Eshop.postman_collection.json` |
+| Test scripts | TC-ID trace, exact status/body-state, credential-field scan, replay/variant callbacks, concurrency status-pair and independent persisted-state assertions | `HW06_Eshop.postman_collection.json` |
+| Data-driven run | FR-02 supports 45 IDs; FR-10 maps 52/52 IDs through 52 rows, but fixture setup and real run evidence remain pending | `FR02_data.csv`; `FR10_data.csv`; `HW06_Eshop.postman_collection.json` |
 | Mock server | `[description or N/A]` | `[evidence]` |
 | Monitor | `[description or N/A]` | `[evidence]` |
 | Newman reporter | CLI + HTML/JUnit | `[artifact]` |

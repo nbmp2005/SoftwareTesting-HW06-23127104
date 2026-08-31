@@ -191,4 +191,43 @@ tôi thấy 200 OK mà (kèm ảnh chụp màn hình gửi từ Postman chứng 
 Phân tích ảnh chụp màn hình và kịch bản test, phát hiện BUG-002 là lỗi do Test Script (Test Bug) chứ không phải lỗi phần mềm (Product Bug). Nguyên nhân do script cũ truyền biến môi trường {{fr02EmailA}} chưa được gán giá trị, khiến Server không tìm thấy user và báo lỗi 404. Khi người dùng test thủ công bằng email thật thì API hoạt động hoàn hảo (200 OK). Đã lập tức tiến hành dọn dẹp: Xóa BUG-002 khỏi BUG_REPORT.md, cập nhật lại số lượng Genuine Bugs từ 2 xuống 1 trong các file TEST_SUMMARY.md, MAIN_REPORT.md và README.md.
 ```
 
+## Interaction 012
+
+- Name of the AI tool: OpenAI Codex
+- Date/time: 2026-08-31T22:13:20.9243614+07:00
+- Prompt:
+```
+[$ai-audit-logger](C:\Users\cpshc\Y3\SoftwareTesting\SoftwareTesting-HW06\SoftwareTesting-HW06-23127104\\.agents\skills\ai-audit-logger\SKILL.md) *Hãy kích hoạt skill&#xA0;****`eshop-api-test-generator`****. Phân tích file đặc tả requirement/API và sinh ít nhất 35 test cases cho tính năng&#xA0;******FR-10\_ORDER STATE******. Ghi kết quả vào file test design tương ứng*
+```
+- AI Output:
+```
+Đã phân tích docs/hw6.md và docs/api_specification.md, ghi source hash, contract inventory, 6 ambiguities/working assumptions, full admin state matrix 5×5 và user-cancel decision table; sinh 47 AI candidate cases FR10-AI-001–047 vào test-cases/FR-10_ORDER_STATE.md. Bộ case phủ valid/invalid/self/backward/skip/final transitions, owner/IDOR, auth/role, ID/payload partitions, state integrity, schema, concurrency/replay và behavioral SQL-injection probes. Đã đồng bộ Design Metrics sang report/TEST_SUMMARY.md, report/MAIN_REPORT.md, README.md và tick riêng tiêu chí ≥35 AI cases của FR-10 trong docs/SUBMISSION_CHECKLIST.md. Validation xác nhận 47 ID duy nhất, đủ 13 cột, Source=AI, audit fields trống và Execution=NOT RUN; không tạo human cases, execution result, bug hoặc evidence giả, và không thay Execution Metrics.
+```
+
+## Interaction 013
+
+- Name of the AI tool: OpenAI Codex
+- Date/time: 2026-08-31T22:34:01.6141605+07:00
+- Prompt:
+```
+[$ai-audit-logger](C:\Users\cpshc\Y3\SoftwareTesting\SoftwareTesting-HW06\SoftwareTesting-HW06-23127104\\.agents\skills\ai-audit-logger\SKILL.md) Đây là 5 test case tôi tự nghĩ thêm cho fr10,  đánh giá xem nhận định của tôi đúng chưa và cập nhật phần human test case và lí do cho chính xác
+```
+- AI Output:
+```
+Đã đánh giá và giữ đủ 5 test case FR10-H-001–005 do sinh viên cung cấp với Source=HUMAN, đồng thời sửa request, oracle, trace và Why AI missed để tránh kết luận bug từ hành vi chưa được đặc tả. H-001 dùng một PATCH cụ thể với giả định 405; H-002 cố định oracle strict-enum cho uppercase/whitespace; H-003 dùng policy reject duplicate JSON key thay vì phụ thuộc parser; H-004 xác định đúng race admin-vs-admin chỉ một transition được commit; H-005 bỏ trace SEC-01/SEC-04 sai và chuyển thành fixture-backed nested credential leakage. Đã thêm ASM-FR10-07–09, ghi 5 hàng HUMAN vào test-cases/FR-10_ORDER_STATE.md, đồng bộ Human-added FR-10 từ 0 lên 5 và tổng từ 5 lên 10 trong TEST_SUMMARY.md, MAIN_REPORT.md, README.md và checklist. Validation xác nhận 47 AI + 5 HUMAN ID duy nhất, đúng số cột và toàn bộ NOT RUN; không thay execution/pass/fail/bug metrics và không tạo evidence giả.
+```
+
+## Interaction 014
+
+- Name of the AI tool: OpenAI Codex
+- Date/time: 2026-08-31T22:44:04.2257854+07:00
+- Prompt:
+```
+[$ai-audit-logger](C:\Users\cpshc\Y3\SoftwareTesting\SoftwareTesting-HW06\SoftwareTesting-HW06-23127104\\.agents\skills\ai-audit-logger\SKILL.md) Hãy kích hoạt skill postman-script-writer. Dựa vào file test-cases/FR-10\_ORDER\_STATE.md, hãy sinh các Request và đoạn Script thông minh (Data-Driven Testing) phục vụ kiểm tra toàn bộ 52 test cases (47 AI + 5 Human) của chức năng FR-10\_ORDER\_STATE. Hãy tạo một Folder mới tên là "FR-10 Order State Machine" trong file HW06\_Eshop.postman\_collection.json hiện có để chứa các Request này. Đảm bảo Script sử dụng pm.iterationData.get() để lấy dữ liệu tự động. Cuối cùng, hãy xuất ra file FR10\_data.csv chứa 52 dòng dữ liệu test tương ứng.
+```
+- AI Output:
+```
+Đã tạo folder "FR-10 Order State Machine" trong HW06_Eshop.postman_collection.json với hai request: FR-10 Mutation Router (Data-Driven) và FR-10 Persisted State Verification (Data-Driven). Pre-request/test scripts đọc dữ liệu bằng pm.iterationData.get(), tự định tuyến method/path/body/auth, assert TC ID, status, JSON, body status, credential-field exclusion và persisted state; secondary pm.sendRequest xử lý replay/near-valid enum, còn hai race rows dùng cặp request bất đồng bộ và allowed status pairs. Đã thêm 10 collection variables rỗng cho token/order fixtures, không lưu secret; tạo FR10_data.csv với đúng 52 dòng và mapping đủ FR10-AI-001–047 cùng FR10-H-001–005. Đã cập nhật implementation mapping trong test design, MAIN_REPORT, TEST_SUMMARY, README và checklist. Validation xác nhận collection JSON parse được, 4 script JavaScript hợp lệ về cú pháp, 52 CSV ID duy nhất khớp 52/52 design IDs, và H-003 vẫn giữ raw duplicate status keys. Không chạy Newman, không tạo PASS/FAIL/bug/evidence và không thay Execution Metrics; runtime tokens, fixture reset, assumption review và race timing vẫn pending.
+```
+
 <!-- Append each later interaction using the exact four-field format above. Keep the user's prompt verbatim and use the real interaction timestamp. -->

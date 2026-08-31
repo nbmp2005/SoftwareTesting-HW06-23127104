@@ -1,0 +1,53 @@
+tcId,scenario,requestMethod,requestPath,requestBody,authMode,expectedStatus,expectedBodyStatus,verifyOrderId,expectedState,secondaryBody,secondaryExpectedStatus,racePath1,raceBody1,raceAuth1,racePath2,raceBody2,raceAuth2,raceAllowedPairs,notes
+FR10-AI-001,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""pending""}",admin,409,,{{fr10OrderPendingId}},pending,,,,,,,,,,self transition
+FR10-AI-002,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",admin,200,confirmed,{{fr10OrderPendingId}},confirmed,,,,,,,,,,valid transition
+FR10-AI-003,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""shipping""}",admin,409,,{{fr10OrderPendingId}},pending,,,,,,,,,,skip transition
+FR10-AI-004,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""delivered""}",admin,409,,{{fr10OrderPendingId}},pending,,,,,,,,,,skip transition
+FR10-AI-005,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""canceled""}",admin,200,canceled,{{fr10OrderPendingId}},canceled,,,,,,,,,,valid cancellation
+FR10-AI-006,normal,PUT,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""pending""}",admin,409,,{{fr10OrderConfirmedId}},confirmed,,,,,,,,,,backward transition
+FR10-AI-007,normal,PUT,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""confirmed""}",admin,409,,{{fr10OrderConfirmedId}},confirmed,,,,,,,,,,self transition
+FR10-AI-008,normal,PUT,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""shipping""}",admin,200,shipping,{{fr10OrderConfirmedId}},shipping,,,,,,,,,,valid transition
+FR10-AI-009,normal,PUT,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""delivered""}",admin,409,,{{fr10OrderConfirmedId}},confirmed,,,,,,,,,,skip transition
+FR10-AI-010,normal,PUT,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""canceled""}",admin,200,canceled,{{fr10OrderConfirmedId}},canceled,,,,,,,,,,valid cancellation
+FR10-AI-011,normal,PUT,/api/admin/orders/{{fr10OrderShippingId}}/status,"{""status"":""pending""}",admin,409,,{{fr10OrderShippingId}},shipping,,,,,,,,,,backward transition
+FR10-AI-012,normal,PUT,/api/admin/orders/{{fr10OrderShippingId}}/status,"{""status"":""confirmed""}",admin,409,,{{fr10OrderShippingId}},shipping,,,,,,,,,,backward transition
+FR10-AI-013,normal,PUT,/api/admin/orders/{{fr10OrderShippingId}}/status,"{""status"":""shipping""}",admin,409,,{{fr10OrderShippingId}},shipping,,,,,,,,,,self transition
+FR10-AI-014,normal,PUT,/api/admin/orders/{{fr10OrderShippingId}}/status,"{""status"":""delivered""}",admin,200,delivered,{{fr10OrderShippingId}},delivered,,,,,,,,,,valid transition
+FR10-AI-015,normal,PUT,/api/admin/orders/{{fr10OrderShippingId}}/status,"{""status"":""canceled""}",admin,409,,{{fr10OrderShippingId}},shipping,,,,,,,,,,forbidden cancellation
+FR10-AI-016,normal,PUT,/api/admin/orders/{{fr10OrderDeliveredId}}/status,"{""status"":""pending""}",admin,409,,{{fr10OrderDeliveredId}},delivered,,,,,,,,,,final state
+FR10-AI-017,normal,PUT,/api/admin/orders/{{fr10OrderDeliveredId}}/status,"{""status"":""confirmed""}",admin,409,,{{fr10OrderDeliveredId}},delivered,,,,,,,,,,final state
+FR10-AI-018,normal,PUT,/api/admin/orders/{{fr10OrderDeliveredId}}/status,"{""status"":""shipping""}",admin,409,,{{fr10OrderDeliveredId}},delivered,,,,,,,,,,final state
+FR10-AI-019,normal,PUT,/api/admin/orders/{{fr10OrderDeliveredId}}/status,"{""status"":""delivered""}",admin,409,,{{fr10OrderDeliveredId}},delivered,,,,,,,,,,final self transition
+FR10-AI-020,normal,PUT,/api/admin/orders/{{fr10OrderDeliveredId}}/status,"{""status"":""canceled""}",admin,409,,{{fr10OrderDeliveredId}},delivered,,,,,,,,,,final state
+FR10-AI-021,normal,PUT,/api/admin/orders/{{fr10OrderCanceledId}}/status,"{""status"":""pending""}",admin,409,,{{fr10OrderCanceledId}},canceled,,,,,,,,,,final state
+FR10-AI-022,normal,PUT,/api/admin/orders/{{fr10OrderCanceledId}}/status,"{""status"":""confirmed""}",admin,409,,{{fr10OrderCanceledId}},canceled,,,,,,,,,,final state
+FR10-AI-023,normal,PUT,/api/admin/orders/{{fr10OrderCanceledId}}/status,"{""status"":""shipping""}",admin,409,,{{fr10OrderCanceledId}},canceled,,,,,,,,,,final state
+FR10-AI-024,normal,PUT,/api/admin/orders/{{fr10OrderCanceledId}}/status,"{""status"":""delivered""}",admin,409,,{{fr10OrderCanceledId}},canceled,,,,,,,,,,final state
+FR10-AI-025,normal,PUT,/api/admin/orders/{{fr10OrderCanceledId}}/status,"{""status"":""canceled""}",admin,409,,{{fr10OrderCanceledId}},canceled,,,,,,,,,,final self transition
+FR10-AI-026,normal,PUT,/api/orders/{{fr10OrderPendingId}}/cancel,,user,200,canceled,{{fr10OrderPendingId}},canceled,,,,,,,,,,owner cancel pending
+FR10-AI-027,normal,PUT,/api/orders/{{fr10OrderConfirmedId}}/cancel,,user,200,canceled,{{fr10OrderConfirmedId}},canceled,,,,,,,,,,owner cancel confirmed
+FR10-AI-028,normal,PUT,/api/orders/{{fr10OrderShippingId}}/cancel,,user,409,,{{fr10OrderShippingId}},shipping,,,,,,,,,,owner cancel shipping
+FR10-AI-029,normal,PUT,/api/orders/{{fr10OrderDeliveredId}}/cancel,,user,409,,{{fr10OrderDeliveredId}},delivered,,,,,,,,,,owner cancel delivered
+FR10-AI-030,normal,PUT,/api/orders/{{fr10OrderCanceledId}}/cancel,,user,409,,{{fr10OrderCanceledId}},canceled,,,,,,,,,,owner cancel canceled
+FR10-AI-031,normal,PUT,/api/orders/{{fr10OrderPendingId}}/cancel,,otherUser,403,,{{fr10OrderPendingId}},pending,,,,,,,,,,IDOR pending
+FR10-AI-032,normal,PUT,/api/orders/{{fr10OrderConfirmedId}}/cancel,,otherUser,403,,{{fr10OrderConfirmedId}},confirmed,,,,,,,,,,IDOR confirmed
+FR10-AI-033,normal,PUT,/api/orders/{{fr10OrderPendingId}}/cancel,,missing,401,,{{fr10OrderPendingId}},pending,,,,,,,,,,missing token
+FR10-AI-034,normal,PUT,/api/orders/{{fr10OrderPendingId}}/cancel,,invalid,401,,{{fr10OrderPendingId}},pending,,,,,,,,,,invalid token
+FR10-AI-035,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",user,403,,{{fr10OrderPendingId}},pending,,,,,,,,,,wrong role
+FR10-AI-036,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",missing,401,,{{fr10OrderPendingId}},pending,,,,,,,,,,missing admin token
+FR10-AI-037,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",invalid,401,,{{fr10OrderPendingId}},pending,,,,,,,,,,invalid admin token
+FR10-AI-038,normal,PUT,/api/admin/orders/999999999/status,"{""status"":""confirmed""}",admin,404,,{{fr10SentinelOrderId}},{{fr10SentinelState}},,,,,,,,,,absent admin order
+FR10-AI-039,normal,PUT,/api/admin/orders/abc/status,"{""status"":""confirmed""}",admin,400,,{{fr10SentinelOrderId}},{{fr10SentinelState}},,,,,,,,,,malformed order id
+FR10-AI-040,normal,PUT,/api/orders/999999999/cancel,,user,404,,{{fr10SentinelOrderId}},{{fr10SentinelState}},,,,,,,,,,absent user order
+FR10-AI-041,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,{},admin,400,,{{fr10OrderPendingId}},pending,,,,,,,,,,missing status
+FR10-AI-042,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":null}",admin,400,,{{fr10OrderPendingId}},pending,,,,,,,,,,null status
+FR10-AI-043,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""refunded""}",admin,400,,{{fr10OrderPendingId}},pending,,,,,,,,,,unknown enum
+FR10-AI-044,race,GET,/api/admin/orders,,admin,200,,{{fr10OrderPendingId}},canceled,,,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",admin,/api/orders/{{fr10OrderPendingId}}/cancel,,user,200+409|200+200,admin confirm versus owner cancel
+FR10-AI-045,normal,PUT,/api/admin/orders/{{fr10OrderShippingId}}/status,"{""status"":""delivered""}",admin,200,delivered,{{fr10OrderShippingId}},delivered,"{""status"":""delivered""}",409,,,,,,,,replay transition
+FR10-AI-046,normal,PUT,/api/admin/orders/1%20OR%201=1/status,"{""status"":""confirmed""}",admin,400,,{{fr10SentinelOrderId}},{{fr10SentinelState}},,,,,,,,,,injection in id
+FR10-AI-047,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed' OR '1'='1""}",admin,400,,{{fr10OrderPendingId}},pending,,,,,,,,,,injection in status
+FR10-H-001,normal,PATCH,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",admin,405,,{{fr10OrderPendingId}},pending,,,,,,,,,,unsupported method
+FR10-H-002,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""CONFIRMED""}",admin,400,,{{fr10OrderPendingId}},pending,"{""status"":"" confirmed ""}",400,,,,,,,,near-valid enum variants
+FR10-H-003,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""canceled"",""status"":""confirmed""}",admin,400,,{{fr10OrderPendingId}},pending,,,,,,,,,,duplicate JSON key raw body
+FR10-H-004,race,GET,/api/admin/orders,,admin,200,,{{fr10OrderConfirmedId}},shipping|canceled,,,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""shipping""}",admin,/api/admin/orders/{{fr10OrderConfirmedId}}/status,"{""status"":""canceled""}",admin,200+409|409+200,admin versus admin race
+FR10-H-005,normal,PUT,/api/admin/orders/{{fr10OrderPendingId}}/status,"{""status"":""confirmed""}",admin,200,confirmed,{{fr10OrderPendingId}},confirmed,,,,,,,,,,nested credential leakage
