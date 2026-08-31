@@ -133,7 +133,7 @@ Prompt/output references: `AI_AUDIT_REPORT.md` Interactions 012–014. The 47-ca
 | Isolation rule | Updating one product must not change other products |
 | Access rule | Mutating product APIs require valid admin role (FR-12) |
 | Security focus | SEC-02, SEC-03, SEC-04, SEC-05 |
-| Cleanup strategy | `[unique prefix + tracked IDs + cleanup]` |
+| Cleanup strategy | Unique `HW06-*` names, tracked returned IDs, target/sentinel snapshots and deterministic restore/delete |
 
 CRUD/partition matrix and cases: [FR-15 test design](../test-cases/FR-15_PRODUCT_CRUD.md).
 
@@ -141,9 +141,9 @@ CRUD/partition matrix and cases: [FR-15 test design](../test-cases/FR-15_PRODUCT
 
 | Generated | VALID | INVALID | INCOMPLETE | Human-added | Final | Pass | Fail | Bugs |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `[≥35]` | `[ ]` | `[ ]` | `[ ]` | `[≥5]` | `[ ]` | `[ ]` | `[ ]` | `[ ]` |
+| `50` | `[pending human audit]` | `[pending human audit]` | `[pending human audit]` | `0` | `[pending human audit]` | `[not run]` | `[not run]` | `[not triaged]` |
 
-Prompt/output references: `[AUDIT ENTRY IDS]`. Key corrections: `[details]`. Human-missed analysis: `[details]`. Evidence: `[links/paths]`.
+Prompt/output reference: `AI_AUDIT_REPORT.md` Interaction 015. The 50 AI candidates cover CRUD lifecycle, list/detail/search, every request field and boundary, referential integrity, partial/full update isolation, auth/role enforcement across all mutation endpoints, schema/sensitive-field checks, SQL injection, stored-XSS API behavior, mass assignment and concurrent updates. Eight explicit ambiguities (`ASM-FR15-01`–`08`) separate locally omitted status/schema/domain/update rules from the source contract. No human audit, human extension, Postman implementation, execution or bug evidence is claimed.
 
 ## 8. Postman and Newman
 

@@ -230,4 +230,17 @@ Phân tích ảnh chụp màn hình và kịch bản test, phát hiện BUG-002 
 Đã tạo folder "FR-10 Order State Machine" trong HW06_Eshop.postman_collection.json với hai request: FR-10 Mutation Router (Data-Driven) và FR-10 Persisted State Verification (Data-Driven). Pre-request/test scripts đọc dữ liệu bằng pm.iterationData.get(), tự định tuyến method/path/body/auth, assert TC ID, status, JSON, body status, credential-field exclusion và persisted state; secondary pm.sendRequest xử lý replay/near-valid enum, còn hai race rows dùng cặp request bất đồng bộ và allowed status pairs. Đã thêm 10 collection variables rỗng cho token/order fixtures, không lưu secret; tạo FR10_data.csv với đúng 52 dòng và mapping đủ FR10-AI-001–047 cùng FR10-H-001–005. Đã cập nhật implementation mapping trong test design, MAIN_REPORT, TEST_SUMMARY, README và checklist. Validation xác nhận collection JSON parse được, 4 script JavaScript hợp lệ về cú pháp, 52 CSV ID duy nhất khớp 52/52 design IDs, và H-003 vẫn giữ raw duplicate status keys. Không chạy Newman, không tạo PASS/FAIL/bug/evidence và không thay Execution Metrics; runtime tokens, fixture reset, assumption review và race timing vẫn pending.
 ```
 
+## Interaction 015
+
+- Name of the AI tool: OpenAI Codex
+- Date/time: 2026-08-31T23:23:17.7387800+07:00
+- Prompt:
+```
+[$ai-audit-logger](C:\Users\cpshc\Y3\SoftwareTesting\SoftwareTesting-HW06\SoftwareTesting-HW06-23127104\\.agents\skills\ai-audit-logger\SKILL.md) *Hãy kích hoạt skill&#xA0;****`eshop-api-test-generator`****. Phân tích file đặc tả requirement/API và sinh ít nhất 35 test cases cho tính năng&#xA0;******FR-15\_PRODUCT\_CRUD******. Ghi kết quả vào file test design tương ứng*
+```
+- AI Output:
+```
+Đã phân tích docs/hw6.md, docs/api_specification.md và FR-15 rules; ghi source hash, contract/fixture inventory, field coverage model và 8 ambiguity/working assumptions do local API spec thiếu status/schema/domain/update semantics. Đã sinh 50 AI candidate cases FR15-AI-001–050 vào test-cases/FR-15_PRODUCT_CRUD.md, phủ create/list/detail/search/update/delete lifecycle, name BVA 1/254/255/256, price/category/optional-field partitions, referential integrity, auth/role trên cả ba mutation endpoint, schema/sensitive fields, isolation, SQL injection, stored-XSS API probe, mass assignment và concurrency. Đã đồng bộ Design Metrics FR-15 từ 0 lên 50 và tổng AI-generated từ 87 lên 137 trong TEST_SUMMARY.md, MAIN_REPORT.md, README.md; tick riêng tiêu chí ≥35 cases FR-15. Validation xác nhận 50 ID duy nhất, đủ 13 cột, Source=AI, audit fields trống và Execution=NOT RUN. Không tạo HUMAN cases, Postman implementation, execution result, bug hoặc evidence giả; không thay Execution Metrics.
+```
+
 <!-- Append each later interaction using the exact four-field format above. Keep the user's prompt verbatim and use the real interaction timestamp. -->

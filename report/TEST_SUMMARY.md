@@ -14,7 +14,7 @@
 
 | Metric | FR-02 | FR-10 | FR-15 | Total |
 | :--- | ---: | ---: | ---: | ---: |
-| AI-generated | `40` | `47` | `0` | `87` |
+| AI-generated | `40` | `47` | `50` | `137` |
 | AI VALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
 | AI INVALID | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |
 | AI INCOMPLETE | `[pending human audit]` | `[ ]` | `[ ]` | `[pending]` |

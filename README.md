@@ -11,7 +11,7 @@ Repository này chứa hồ sơ thực hiện HW06 cho ba feature đã chọn:
 | :--- | :--- | :--- | :--- |
 | A | FR-02 – Login & account lockout | `POST /api/login` + supporting auth probes | 40 AI candidates + 5 human extensions; Postman implementation partial; chờ AI audit, iteration/setup và execution |
 | B | FR-10 – Order state machine | `PUT /api/admin/orders/:id/status`, `PUT /api/orders/:id/cancel` | 47 AI + 5 human; Postman/CSV mapped 52/52; chờ fixture reset, human audit và execution |
-| C | FR-15 – Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | Chưa thực thi |
+| C | FR-15 – Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | 50 AI candidates; chờ human audit, human extensions, Postman implementation và execution |
 
 Lựa chọn này hợp lệ vì lấy đúng một feature từ mỗi Pool A, B, C. Trước khi bắt đầu, phải xác nhận bộ ba không trùng với thành viên khác trong nhóm.
 
@@ -21,7 +21,7 @@ Chỉ điền số liệu từ kết quả thực tế; không suy đoán hoặc
 
 | Chỉ số | FR-02 | FR-10 | FR-15 | Tổng |
 | :--- | ---: | ---: | ---: | ---: |
-| AI-generated test cases | `40` | `47` | `0` | `87` |
+| AI-generated test cases | `40` | `47` | `50` | `137` |
 | Human-added test cases | `5` | `5` | `0` | `10` |
 | Final test cases | `45` | `[pending]` | `[pending]` | `[pending]` |
 | Executed | `45` | `[0]` | `[0]` | `[0]` |
