@@ -25,9 +25,10 @@ jobs:
 
     - name: Install dependencies and start server
       run: |
-        cd backend
+        cd backend/backend
         npm install
-        npm start &
+        node database.js
+        node server.js &
         sleep 10 # Đợi server khởi động (đảm bảo port 3000 sẵn sàng)
 
     - name: Setup Node.js for Newman
