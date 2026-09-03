@@ -68,12 +68,6 @@ Các skill trong `.agents/skills/` được tổ chức theo pipeline và phải
 5. `hw06-deliverable-sync` đồng bộ source artifact sang main report, test summary, README và checklist.
 6. `ai-audit-logger` ghi interaction hiện tại bằng prompt nguyên văn và timestamp thật.
 
-Mọi skill phải giữ nguyên các field chưa có evidence; không được tự điền số execution, SHA, URL, screenshot, timestamp cũ hoặc kết quả giả.
 
-Độ chặt chẽ được đo trên toàn bộ skill package (`SKILL.md` + focused references), không bằng số dòng của entrypoint. Entrypoint giữ routing/invariants; decision tables và quy tắc chi tiết nằm trong `references/` để agent chỉ tải đúng phần cần dùng.
 
-## Required non-Markdown artifacts
 
-Các file sau chỉ được thêm sau khi có dữ liệu/chứng cứ thật: Postman collection JSON, environment JSON đã loại secret, data files, Newman HTML, Excel test cases và summary, screenshots, sơ đồ tự vẽ PNG, PDF của report/audit/critique, và pipeline YAML.
-
-Tên file nộp cuối: `23127104_HW06_AI_API_<điểm-tự-đánh-giá-3-chữ-số>.zip`. Điểm và tên file cuối phải do sinh viên chốt sau khi hoàn thành các mục còn thiếu trong checklist.
