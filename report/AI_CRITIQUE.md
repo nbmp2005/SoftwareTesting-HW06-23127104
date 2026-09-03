@@ -1,4 +1,4 @@
-# AI Critique (Mandatory, 200–300 words)
+# AI Critique 
 
 During this assignment, I used several AI tools to extract requirements, generate test cases, implement data-driven Postman scripts, reconcile Newman evidence, and draft reports. AI was effective at expanding coverage quickly: it produced partitions and boundaries for FR-02, a 25-cell state matrix for FR-10, and broad CRUD, validation, authorization, and schema checks for FR-15. It also helped maintain stable test-case IDs across Markdown, CSV, Postman, and Newman artifacts.
 
@@ -6,4 +6,3 @@ However, the review exposed a more important limitation: AI often treated a fail
 
 I learned that AI-generated breadth does not replace test isolation, source-based oracles, or human review. A trustworthy verdict requires a deterministic fixture, an exact requirement citation, an observed response and post-state, and an independent reproduction. Reports must preserve uncertainty instead of converting every red assertion into a defect. AI remains valuable for coverage and traceability, but the student must challenge its assumptions, inspect raw evidence, and correct both tests and documentation before submission.
 
-<!-- Word count of critique paragraphs: 256. -->
