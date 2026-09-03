@@ -1,5 +1,5 @@
 tcId,requestBody,expectedStatus,expectedBody,saveTokenAs,probeEmail,accountVariant
-FR02-AI-001,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,unknown
+FR02-AI-001,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",999,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,unknown
 FR02-AI-002,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,registered
 FR02-AI-003,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,unknown
 FR02-AI-004,"{""email"":""test@eshop.com"", ""password"":""Test1234!""}",200,"{""$type"":""object"", ""token"":{""$type"":""string""}}",fr02ValidToken,test@eshop.com,registered

@@ -48,25 +48,24 @@ jobs:
           --env-var "baseUrl=http://localhost:3000" \
           --reporters cli,htmlextra \
           --reporter-htmlextra-export newman-report-FR02.html
-      continue-on-error: true
 
     - name: Run Newman Tests (FR-10)
+      if: always()
       run: |
         newman run HW06_Eshop.postman_collection.json \
           -d FR10_data.csv \
           --env-var "baseUrl=http://localhost:3000" \
           --reporters cli,htmlextra \
           --reporter-htmlextra-export newman-report-FR10.html
-      continue-on-error: true
 
     - name: Run Newman Tests (FR-15)
+      if: always()
       run: |
         newman run HW06_Eshop.postman_collection.json \
           -d FR15_data.csv \
           --env-var "baseUrl=http://localhost:3000" \
           --reporters cli,htmlextra \
           --reporter-htmlextra-export newman-report-FR15.html
-      continue-on-error: true
 
     - name: Upload Test Reports
       uses: actions/upload-artifact@v4
