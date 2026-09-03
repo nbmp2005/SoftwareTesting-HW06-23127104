@@ -1,0 +1,72 @@
+name: CI/CD API Test
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Cho phép trigger bằng tay trên GitHub
+
+jobs:
+  newman-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # (Tùy chọn) Bật lên nếu bạn cần khởi động Backend SUT tại đây
+    # - name: Setup Node & Start SUT (System Under Test)
+    #   uses: actions/setup-node@v4
+    #   with:
+    #     node-version: '20'
+    # - run: npm install
+    # - run: npm start &
+    # - run: sleep 10 # Đợi server khởi động xong
+
+    - name: Setup Node.js for Newman
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Newman & HTML Extra Reporter
+      run: |
+        npm install -g newman
+        npm install -g newman-reporter-htmlextra
+
+    - name: Run Newman Tests (FR-02)
+      run: |
+        newman run HW06_Eshop.postman_collection.json \
+          -d FR02_data.csv \
+          --env-var "baseUrl=http://localhost:3000" \
+          --reporters cli,htmlextra \
+          --reporter-htmlextra-export newman-report-FR02.html
+      continue-on-error: true # Để test lỗi không làm sập toàn bộ pipeline
+
+    - name: Run Newman Tests (FR-10)
+      run: |
+        newman run HW06_Eshop.postman_collection.json \
+          -d FR10_data.csv \
+          --env-var "baseUrl=http://localhost:3000" \
+          --reporters cli,htmlextra \
+          --reporter-htmlextra-export newman-report-FR10.html
+      continue-on-error: true
+
+    - name: Run Newman Tests (FR-15)
+      run: |
+        newman run HW06_Eshop.postman_collection.json \
+          -d FR15_data.csv \
+          --env-var "baseUrl=http://localhost:3000" \
+          --reporters cli,htmlextra \
+          --reporter-htmlextra-export newman-report-FR15.html
+      continue-on-error: true
+
+    - name: Upload Test Reports
+      uses: actions/upload-artifact@v4
+      if: always() # Luôn upload report cho dù test pass hay fail
+      with:
+        name: newman-reports
+        path: |
+          newman-report-FR02.html
+          newman-report-FR10.html
+          newman-report-FR15.html
