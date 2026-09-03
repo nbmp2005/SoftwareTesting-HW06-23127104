@@ -5,24 +5,30 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Cho phép trigger bằng tay trên GitHub
+  workflow_dispatch:
 
 jobs:
   newman-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout Repository (Tests)
       uses: actions/checkout@v4
 
-    # (Tùy chọn) Bật lên nếu bạn cần khởi động Backend SUT tại đây
-    # - name: Setup Node & Start SUT (System Under Test)
-    #   uses: actions/setup-node@v4
-    #   with:
-    #     node-version: '20'
-    # - run: npm install
-    # - run: npm start &
-    # - run: sleep 10 # Đợi server khởi động xong
+    - name: Clone Backend (EShop SUT)
+      run: git clone https://github.com/ttbhanh/eshop-sut.git backend
+
+    - name: Setup Node & Start EShop Backend
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies and start server
+      run: |
+        cd backend
+        npm install
+        npm start &
+        sleep 10 # Đợi server khởi động (đảm bảo port 3000 sẵn sàng)
 
     - name: Setup Node.js for Newman
       uses: actions/setup-node@v4
@@ -41,7 +47,7 @@ jobs:
           --env-var "baseUrl=http://localhost:3000" \
           --reporters cli,htmlextra \
           --reporter-htmlextra-export newman-report-FR02.html
-      continue-on-error: true # Để test lỗi không làm sập toàn bộ pipeline
+      continue-on-error: true
 
     - name: Run Newman Tests (FR-10)
       run: |
@@ -63,7 +69,7 @@ jobs:
 
     - name: Upload Test Reports
       uses: actions/upload-artifact@v4
-      if: always() # Luôn upload report cho dù test pass hay fail
+      if: always()
       with:
         name: newman-reports
         path: |
