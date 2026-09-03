@@ -1,0 +1,56 @@
+tcId,requestMethod,requestPath,requestBody,authMode,expectedStatus,expectedBody,secondaryPath,secondaryMethod,secondaryExpectedStatus,saveCreatedIdAs,cleanupPath,fr15AdminToken,fr15UserToken,fr15ProductAId,fr15ProductBId,fr15CategoryAId,fr15CategoryBId,fr15DisposableProductId,fr15CategoryTempId,fr15ProductTempId,fr15ProductDelId,fr15OrderHistId
+FR15-AI-001,POST,/api/products,"{""name"":""HW06-P-001"",""price"":100000,""description"":""Mô tả"",""imageUrl"":""https://example.test/p.png"",""category_id"":10}",admin,201,"{""id"":{""$type"":""number""},""name"":""HW06-P-001"",""price"":100000,""category_id"":10}",,,, fr15CreatedProductId,/api/products/{fr15CreatedProductId},,,6,7,10,11,8,12,9,10,1
+FR15-AI-002,POST,/api/products,"{""name"":""M"",""price"":0.01,""category_id"":10}",admin,201,"{""id"":{""$type"":""number""},""name"":""M"",""price"":0.01}",,,, fr15CreatedProductId,/api/products/{fr15CreatedProductId},,,6,7,10,11,8,12,9,10,1
+FR15-AI-003,GET,/api/products,,none,200,"{""$type"":""array""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-004,GET,/api/products/{fr15ProductAId},,none,200,"{""id"":{""$type"":""number""},""name"":{""$type"":""string""},""price"":{""$type"":""number""}}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-005,GET,/api/products?search=HW06-Needle-005,,none,200,"{""$type"":""array"",""$nonEmpty"":true}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-006,GET,/api/products?search=HW06-NO-MATCH-006,,none,200,[],,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-007,GET,/api/products/999999999,,none,404,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-008,GET,/api/products/abc,,none,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-009,PUT,/api/products/{fr15ProductAId},"{""name"":""HW06-Renamed-009""}",admin,200,"{""name"":""HW06-Renamed-009""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-010,PUT,/api/products/{fr15ProductAId},"{""price"":125000.5}",admin,200,"{""price"":125000.5}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-011,PUT,/api/products/{fr15ProductAId},"{""category_id"":11}",admin,200,"{""category_id"":11}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-012,PUT,/api/products/{fr15ProductAId},"{""description"":null,""imageUrl"":""\\""}""",admin,200,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-013,PUT,/api/products/{fr15ProductAId},"{""name"":""HW06-Full-013"",""price"":99000,""description"":""D13"",""imageUrl"":""https://example.test/img.png"",""category_id"":11}",admin,200,"{""name"":""HW06-Full-013"",""price"":99000,""category_id"":11}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-014,DELETE,/api/products/{fr15DisposableProductId},,admin,200,"{""$type"":""object""}",/api/products/{fr15DisposableProductId},GET,404,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-015,DELETE,/api/products/999999999,,admin,404,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-016,DELETE,/api/products/{fr15DisposableProductId},,admin,200,"{""$type"":""object""}",/api/products/{fr15DisposableProductId},DELETE,404,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-017,POST,/api/products,"{""price"":100,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-018,POST,/api/products,"{""name"":null,""price"":100,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-019,POST,/api/products,"{""name"":""\"""",""price"":100,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-020,POST,/api/products,"{""name"":""   "",""price"":100,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-021,POST,/api/products,"{""name"":""A"",""price"":100,""category_id"":10}",admin,201,"{""name"":""A""}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-022,POST,/api/products,"{""name"":""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"",""price"":100,""category_id"":10}",admin,201,"{""$type"":""object""}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-023,POST,/api/products,"{""name"":""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"",""price"":100,""category_id"":10}",admin,201,"{""$type"":""object""}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-024,POST,/api/products,"{""name"":""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"",""price"":100,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-025,POST,/api/products,"{""name"":""Cà phê ☕ 商品"",""price"":100,""category_id"":10}",admin,201,"{""name"":""Cà phê ☕ 商品""}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-026,POST,/api/products,"{""name"":""Missing-Price"",""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-027,POST,/api/products,"{""name"":""Null-Price"",""price"":null,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-028,POST,/api/products,"{""name"":""Neg-Price"",""price"":-1,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-029,POST,/api/products,"{""name"":""Zero-Price"",""price"":0,""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-030,POST,/api/products,"{""name"":""Min-Price"",""price"":0.01,""category_id"":10}",admin,201,"{""price"":0.01}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-031,POST,/api/products,"{""name"":""Decimal-Price"",""price"":99.99,""category_id"":10}",admin,201,"{""price"":99.99}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-032,POST,/api/products,"{""name"":""String-Price"",""price"":""100"",""category_id"":10}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-033,POST,/api/products,"{""name"":""Missing-Cat"",""price"":100}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-034,POST,/api/products,"{""name"":""Null-Cat"",""price"":100,""category_id"":null}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-035,POST,/api/products,"{""name"":""Absent-Cat"",""price"":100,""category_id"":999999999}",admin,404,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-036,POST,/api/products,"{""name"":""String-Cat"",""price"":100,""category_id"":""10""}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-037,PUT,/api/products/{fr15ProductAId},"{""description"":{""text"":""bad""}}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-038,PUT,/api/products/{fr15ProductAId},"{""imageUrl"":{""href"":""https://example.test""}}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-039,POST,/api/products,"{""name"":""Auth-Test-039"",""price"":100,""category_id"":10}",missing,401,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-040,POST,/api/products,"{""name"":""Auth-Test-040"",""price"":100,""category_id"":10}",user,403,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-041,PUT,/api/products/{fr15ProductAId},"{""price"":1}",missing,401,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-042,PUT,/api/products/{fr15ProductAId},"{""price"":1}",user,403,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-043,DELETE,/api/products/{fr15DisposableProductId},,missing,401,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-044,DELETE,/api/products/{fr15DisposableProductId},,user,403,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-045,PUT,/api/products/{fr15ProductAId},"{""price"":1}",invalid,401,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-046,GET,/api/products/1%20OR%201=1,,none,"400,404","{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-047,POST,/api/products,"{""name"":""x'); DROP TABLE products;--"",""price"":100,""category_id"":10}",admin,201,"{""name"":""x'); DROP TABLE products;--""}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-048,POST,/api/products,"{""name"":""<img src=x onerror=alert(1)>"",""price"":100,""category_id"":10}",admin,201,"{""name"":""<img src=x onerror=alert(1)>""}",,,, fr15CreatedProductId,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-049,POST,/api/products,"{""name"":""Mass-Assign"",""price"":100,""category_id"":10,""id"":777,""role"":""admin"",""isAdmin"":true}",admin,400,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-AI-050,PUT,/api/products/{fr15ProductAId},"{""name"":""Race-A""}",admin,200,"{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-H-001,DELETE,/api/products/{fr15CategoryTempId},,admin,"200,400,409","{""$type"":""object""}",/api/products/{fr15ProductTempId},GET,200,,,,,6,7,10,11,8,12,9,10,1
+FR15-H-002,DELETE,/api/products/{fr15ProductDelId},,admin,200,"{""$type"":""object""}",/api/orders/{fr15OrderHistId},GET,200,,,,,6,7,10,11,8,12,9,10,1
+FR15-H-003,GET,/api/products?search=%25' OR '1'='1,,none,200,"{""$type"":""array""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-H-004,PUT,/api/products/{fr15ProductAId},{},admin,"200,400","{""$type"":""object""}",,,,,,,,6,7,10,11,8,12,9,10,1
+FR15-H-005,POST,/api/products,"{""name"":""Inf-Price"",""price"":1e309,""category_id"":10}",admin,"400,201","{""$type"":""object""}",/api/products,POST,"400,201",,,,,6,7,10,11,8,12,9,10,1

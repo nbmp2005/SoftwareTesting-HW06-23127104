@@ -1,871 +1,1172 @@
 {
-    "info": {
-        "_postman_id": "31cf6f95-181b-4374-8118-46dc343f20ba",
-        "name": "HW06_Eshop",
-        "description": "HW06 EShop API collection. Iteration data and execution evidence must not contain secrets.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-        "_exporter_id": "50598767",
-        "_collection_link": "https://go.postman.co/collection/50598767-31cf6f95-181b-4374-8118-46dc343f20ba?source=collection_link"
+  "info": {
+    "_postman_id": "31cf6f95-181b-4374-8118-46dc343f20ba",
+    "name": "HW06_Eshop",
+    "description": "HW06 EShop API collection. Iteration data and execution evidence must not contain secrets.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50598767",
+    "_collection_link": "https://go.postman.co/collection/50598767-31cf6f95-181b-4374-8118-46dc343f20ba?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "description": "Data-driven request for FR-02_LOGIN, including the login steps of FR02-H-002/H-003/H-004. Required iteration columns: tcId, requestBody, expectedStatus, expectedBody. Optional columns: requestMethod, contentType and saveTokenAs. expectedStatus accepts an exact code, an allowed-code list, or a status class such as 4xx when the specification does not define one exact error code. expectedBody is a JSON partial-body oracle and supports $type, $nonEmpty, $absent, $regex and $oneOf. Stateful, timing, concurrency and cross-endpoint cases still require their documented setup flow.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tcId = pm.iterationData.get('tcId');",
+              "const requestMethod = pm.iterationData.get('requestMethod');",
+              "const contentType = pm.iterationData.get('contentType');",
+              "const requestBody = pm.iterationData.get('requestBody');",
+              "",
+              "if (requestMethod) pm.request.method = String(requestMethod).toUpperCase();",
+              "if (contentType) pm.request.headers.upsert({ key: 'Content-Type', value: String(contentType) });",
+              "if (requestBody !== undefined && requestBody !== null && pm.request.body) {",
+              "    const serializedBody = typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody);",
+              "    pm.request.body.update(pm.variables.replaceIn(serializedBody));",
+              "}",
+              "if (!tcId) console.warn('FR-02 data row has no tcId; traceability assertion will fail.');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const tcIdRaw = pm.iterationData.get('tcId');",
+              "const expectedStatusRaw = pm.iterationData.get('expectedStatus');",
+              "const expectedBodyRaw = pm.iterationData.get('expectedBody');",
+              "const saveTokenAsRaw = pm.iterationData.get('saveTokenAs');",
+              "const tcId = tcIdRaw == null ? '' : String(tcIdRaw).trim();",
+              "const testName = (label) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + label;",
+              "",
+              "pm.test(testName('iteration row has a traceable FR-02 TC ID'), function () {",
+              "    pm.expect(tcId, 'tcId must be provided by iteration data').to.match(/^FR02-(?:AI|H)-\\d{3}$/);",
+              "});",
+              "",
+              "function parseDataValue(raw, fieldName) {",
+              "    if (raw === undefined || raw === null || raw === '') return undefined;",
+              "    if (typeof raw !== 'string') return raw;",
+              "    const value = raw.trim();",
+              "    if (!value) return undefined;",
+              "    try { return JSON.parse(value); }",
+              "    catch (error) {",
+              "        if (fieldName === 'expectedBody') throw new Error(fieldName + ' must be valid JSON: ' + error.message);",
+              "        return value;",
+              "    }",
+              "}",
+              "",
+              "function normalizeStatusOracle(raw) {",
+              "    const parsed = parseDataValue(raw, 'expectedStatus');",
+              "    if (typeof parsed === 'number') return { kind: 'codes', values: [parsed] };",
+              "    if (Array.isArray(parsed)) {",
+              "        const values = parsed.map(Number);",
+              "        if (!values.length || values.some((value) => !Number.isInteger(value))) throw new Error('expectedStatus array must contain integer HTTP status codes');",
+              "        return { kind: 'codes', values: values };",
+              "    }",
+              "    const text = parsed === undefined ? '' : String(parsed).trim();",
+              "    if (/^[1-5]xx$/i.test(text)) return { kind: 'class', value: Number(text[0]) };",
+              "    if (/^\\d{3}(?:\\s*,\\s*\\d{3})+$/.test(text)) return { kind: 'codes', values: text.split(',').map((value) => Number(value.trim())) };",
+              "    if (/^\\d{3}$/.test(text)) return { kind: 'codes', values: [Number(text)] };",
+              "    throw new Error('expectedStatus must be an exact code, a code list, or a class such as 4xx');",
+              "}",
+              "",
+              "let statusOracle;",
+              "let statusOracleError;",
+              "try { statusOracle = normalizeStatusOracle(expectedStatusRaw); } catch (error) { statusOracleError = error; }",
+              "pm.test(testName('expectedStatus data is valid'), function () {",
+              "    pm.expect(statusOracleError, statusOracleError && statusOracleError.message).to.equal(undefined);",
+              "});",
+              "if (statusOracle) {",
+              "    pm.test(testName('response status matches iteration oracle'), function () {",
+              "        if (statusOracle.kind === 'class') pm.expect(Math.floor(pm.response.code / 100)).to.equal(statusOracle.value);",
+              "        else pm.expect(statusOracle.values, 'actual status: ' + pm.response.code).to.include(pm.response.code);",
+              "    });",
+              "}",
+              "",
+              "let expectedBody;",
+              "let expectedBodyError;",
+              "try { expectedBody = parseDataValue(expectedBodyRaw, 'expectedBody'); } catch (error) { expectedBodyError = error; }",
+              "pm.test(testName('expectedBody data is present and valid JSON'), function () {",
+              "    pm.expect(expectedBodyRaw, 'expectedBody must be provided by iteration data').to.not.be.oneOf([undefined, null, '']);",
+              "    pm.expect(expectedBodyError, expectedBodyError && expectedBodyError.message).to.equal(undefined);",
+              "});",
+              "",
+              "function valueType(value) {",
+              "    if (Array.isArray(value)) return 'array';",
+              "    if (value === null) return 'null';",
+              "    return typeof value;",
+              "}",
+              "",
+              "function matchOracle(actual, oracle, path) {",
+              "    if (oracle && typeof oracle === 'object' && !Array.isArray(oracle)) {",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$absent')) {",
+              "            pm.expect(actual, path + ' must be absent').to.equal(undefined);",
+              "            return;",
+              "        }",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$type')) pm.expect(valueType(actual), path + ' type').to.equal(oracle.$type);",
+              "        if (oracle.$nonEmpty === true) {",
+              "            pm.expect(actual, path + ' must be non-empty').to.not.be.oneOf(['', null, undefined]);",
+              "            if (Array.isArray(actual)) pm.expect(actual.length, path + ' must be non-empty').to.be.above(0);",
+              "        }",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$regex')) pm.expect(String(actual), path + ' regex').to.match(new RegExp(oracle.$regex));",
+              "        if (Object.prototype.hasOwnProperty.call(oracle, '$oneOf')) pm.expect(oracle.$oneOf, path + ' allowed values').to.include(actual);",
+              "        const directives = ['$absent', '$type', '$nonEmpty', '$regex', '$oneOf'];",
+              "        Object.keys(oracle).filter((key) => !directives.includes(key)).forEach((key) => {",
+              "            pm.expect(actual, path + ' must be an object').to.be.an('object');",
+              "            const childOracle = oracle[key];",
+              "            const expectsAbsence = childOracle && typeof childOracle === 'object' && Object.prototype.hasOwnProperty.call(childOracle, '$absent');",
+              "            if (!expectsAbsence) pm.expect(actual, path + '.' + key + ' must exist').to.have.property(key);",
+              "            matchOracle(actual[key], childOracle, path + '.' + key);",
+              "        });",
+              "        return;",
+              "    }",
+              "    if (Array.isArray(oracle)) {",
+              "        pm.expect(actual, path + ' must be an array').to.be.an('array');",
+              "        pm.expect(actual.length, path + ' array length').to.equal(oracle.length);",
+              "        oracle.forEach((value, index) => matchOracle(actual[index], value, path + '[' + index + ']'));",
+              "        return;",
+              "    }",
+              "    pm.expect(actual, path).to.eql(oracle);",
+              "}",
+              "",
+              "if (expectedBody !== undefined && !expectedBodyError) {",
+              "    let actualBody;",
+              "    let jsonError;",
+              "    try { actualBody = pm.response.json(); } catch (error) { jsonError = error; }",
+              "    pm.test(testName('response body is valid JSON'), function () {",
+              "        pm.expect(jsonError, jsonError && jsonError.message).to.equal(undefined);",
+              "    });",
+              "    if (!jsonError) {",
+              "        if (saveTokenAsRaw) {",
+              "            pm.test(testName('token requested by setup row is available'), function () {",
+              "                pm.expect(actualBody).to.be.an('object').that.has.property('token');",
+              "                pm.expect(actualBody.token).to.be.a('string').and.not.empty;",
+              "            });",
+              "            if (actualBody && typeof actualBody.token === 'string' && actualBody.token) {",
+              "                pm.environment.set(String(saveTokenAsRaw), actualBody.token);",
+              "            }",
+              "        }",
+              "        pm.test(testName('response body matches iteration oracle'), function () { matchOracle(actualBody, expectedBody, '$'); });",
+              "        pm.test(testName('response does not expose credential or lockout internals'), function () {",
+              "            const forbidden = /^(password|password_hash|passwordhash|reset_token|resettoken|otp|login_attempts|loginattempts|locked_until|lockeduntil)$/i;",
+              "            const leaks = [];",
+              "            function scan(value, path) {",
+              "                if (!value || typeof value !== 'object') return;",
+              "                Object.keys(value).forEach((key) => {",
+              "                    const nextPath = path + '.' + key;",
+              "                    if (forbidden.test(key)) leaks.push(nextPath);",
+              "                    scan(value[key], nextPath);",
+              "                });",
+              "            }",
+              "            scan(actualBody, '$');",
+              "            pm.expect(leaks, 'sensitive fields found: ' + leaks.join(', ')).to.be.empty;",
+              "        });",
+              "    }",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "X-Student-Id",
+            "value": "{{studentId}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{{requestBody}}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "login"
+          ]
+        }
+      },
+      "response": []
     },
-    "item": [
+    {
+      "name": "FR-02 Human Extensions",
+      "description": "Support requests for student-authored FR02-H-001..005. H001 and H005 have dedicated assertions. H002 uses the two setup requests here plus Login iterations before/after the original lock expiry. H003 and H004 are state/timing sequences executed through Login iteration rows. No execution result is implied; fixture reset and controlled timing remain required.",
+      "item": [
         {
-            "name": "Login",
-            "description": "Data-driven request for FR-02_LOGIN, including the login steps of FR02-H-002/H-003/H-004. Required iteration columns: tcId, requestBody, expectedStatus, expectedBody. Optional columns: requestMethod, contentType and saveTokenAs. expectedStatus accepts an exact code, an allowed-code list, or a status class such as 4xx when the specification does not define one exact error code. expectedBody is a JSON partial-body oracle and supports $type, $nonEmpty, $absent, $regex and $oneOf. Stateful, timing, concurrency and cross-endpoint cases still require their documented setup flow.",
-            "event": [
-                {
-                    "listen": "prerequest",
-                    "script": {
-                        "type": "text/javascript",
-                        "exec": [
-                            "const tcId = pm.iterationData.get('tcId');",
-                            "const requestMethod = pm.iterationData.get('requestMethod');",
-                            "const contentType = pm.iterationData.get('contentType');",
-                            "const requestBody = pm.iterationData.get('requestBody');",
-                            "",
-                            "if (requestMethod) pm.request.method = String(requestMethod).toUpperCase();",
-                            "if (contentType) pm.request.headers.upsert({ key: 'Content-Type', value: String(contentType) });",
-                            "if (requestBody !== undefined && requestBody !== null && pm.request.body) {",
-                            "    const serializedBody = typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody);",
-                            "    pm.request.body.update(pm.variables.replaceIn(serializedBody));",
-                            "}",
-                            "if (!tcId) console.warn('FR-02 data row has no tcId; traceability assertion will fail.');"
-                        ]
-                    }
-                },
-                {
-                    "listen": "test",
-                    "script": {
-                        "type": "text/javascript",
-                        "exec": [
-                            "const tcIdRaw = pm.iterationData.get('tcId');",
-                            "const expectedStatusRaw = pm.iterationData.get('expectedStatus');",
-                            "const expectedBodyRaw = pm.iterationData.get('expectedBody');",
-                            "const saveTokenAsRaw = pm.iterationData.get('saveTokenAs');",
-                            "const tcId = tcIdRaw == null ? '' : String(tcIdRaw).trim();",
-                            "const testName = (label) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + label;",
-                            "",
-                            "pm.test(testName('iteration row has a traceable FR-02 TC ID'), function () {",
-                            "    pm.expect(tcId, 'tcId must be provided by iteration data').to.match(/^FR02-(?:AI|H)-\\d{3}$/);",
-                            "});",
-                            "",
-                            "function parseDataValue(raw, fieldName) {",
-                            "    if (raw === undefined || raw === null || raw === '') return undefined;",
-                            "    if (typeof raw !== 'string') return raw;",
-                            "    const value = raw.trim();",
-                            "    if (!value) return undefined;",
-                            "    try { return JSON.parse(value); }",
-                            "    catch (error) {",
-                            "        if (fieldName === 'expectedBody') throw new Error(fieldName + ' must be valid JSON: ' + error.message);",
-                            "        return value;",
-                            "    }",
-                            "}",
-                            "",
-                            "function normalizeStatusOracle(raw) {",
-                            "    const parsed = parseDataValue(raw, 'expectedStatus');",
-                            "    if (typeof parsed === 'number') return { kind: 'codes', values: [parsed] };",
-                            "    if (Array.isArray(parsed)) {",
-                            "        const values = parsed.map(Number);",
-                            "        if (!values.length || values.some((value) => !Number.isInteger(value))) throw new Error('expectedStatus array must contain integer HTTP status codes');",
-                            "        return { kind: 'codes', values: values };",
-                            "    }",
-                            "    const text = parsed === undefined ? '' : String(parsed).trim();",
-                            "    if (/^[1-5]xx$/i.test(text)) return { kind: 'class', value: Number(text[0]) };",
-                            "    if (/^\\d{3}(?:\\s*,\\s*\\d{3})+$/.test(text)) return { kind: 'codes', values: text.split(',').map((value) => Number(value.trim())) };",
-                            "    if (/^\\d{3}$/.test(text)) return { kind: 'codes', values: [Number(text)] };",
-                            "    throw new Error('expectedStatus must be an exact code, a code list, or a class such as 4xx');",
-                            "}",
-                            "",
-                            "let statusOracle;",
-                            "let statusOracleError;",
-                            "try { statusOracle = normalizeStatusOracle(expectedStatusRaw); } catch (error) { statusOracleError = error; }",
-                            "pm.test(testName('expectedStatus data is valid'), function () {",
-                            "    pm.expect(statusOracleError, statusOracleError && statusOracleError.message).to.equal(undefined);",
-                            "});",
-                            "if (statusOracle) {",
-                            "    pm.test(testName('response status matches iteration oracle'), function () {",
-                            "        if (statusOracle.kind === 'class') pm.expect(Math.floor(pm.response.code / 100)).to.equal(statusOracle.value);",
-                            "        else pm.expect(statusOracle.values, 'actual status: ' + pm.response.code).to.include(pm.response.code);",
-                            "    });",
-                            "}",
-                            "",
-                            "let expectedBody;",
-                            "let expectedBodyError;",
-                            "try { expectedBody = parseDataValue(expectedBodyRaw, 'expectedBody'); } catch (error) { expectedBodyError = error; }",
-                            "pm.test(testName('expectedBody data is present and valid JSON'), function () {",
-                            "    pm.expect(expectedBodyRaw, 'expectedBody must be provided by iteration data').to.not.be.oneOf([undefined, null, '']);",
-                            "    pm.expect(expectedBodyError, expectedBodyError && expectedBodyError.message).to.equal(undefined);",
-                            "});",
-                            "",
-                            "function valueType(value) {",
-                            "    if (Array.isArray(value)) return 'array';",
-                            "    if (value === null) return 'null';",
-                            "    return typeof value;",
-                            "}",
-                            "",
-                            "function matchOracle(actual, oracle, path) {",
-                            "    if (oracle && typeof oracle === 'object' && !Array.isArray(oracle)) {",
-                            "        if (Object.prototype.hasOwnProperty.call(oracle, '$absent')) {",
-                            "            pm.expect(actual, path + ' must be absent').to.equal(undefined);",
-                            "            return;",
-                            "        }",
-                            "        if (Object.prototype.hasOwnProperty.call(oracle, '$type')) pm.expect(valueType(actual), path + ' type').to.equal(oracle.$type);",
-                            "        if (oracle.$nonEmpty === true) {",
-                            "            pm.expect(actual, path + ' must be non-empty').to.not.be.oneOf(['', null, undefined]);",
-                            "            if (Array.isArray(actual)) pm.expect(actual.length, path + ' must be non-empty').to.be.above(0);",
-                            "        }",
-                            "        if (Object.prototype.hasOwnProperty.call(oracle, '$regex')) pm.expect(String(actual), path + ' regex').to.match(new RegExp(oracle.$regex));",
-                            "        if (Object.prototype.hasOwnProperty.call(oracle, '$oneOf')) pm.expect(oracle.$oneOf, path + ' allowed values').to.include(actual);",
-                            "        const directives = ['$absent', '$type', '$nonEmpty', '$regex', '$oneOf'];",
-                            "        Object.keys(oracle).filter((key) => !directives.includes(key)).forEach((key) => {",
-                            "            pm.expect(actual, path + ' must be an object').to.be.an('object');",
-                            "            const childOracle = oracle[key];",
-                            "            const expectsAbsence = childOracle && typeof childOracle === 'object' && Object.prototype.hasOwnProperty.call(childOracle, '$absent');",
-                            "            if (!expectsAbsence) pm.expect(actual, path + '.' + key + ' must exist').to.have.property(key);",
-                            "            matchOracle(actual[key], childOracle, path + '.' + key);",
-                            "        });",
-                            "        return;",
-                            "    }",
-                            "    if (Array.isArray(oracle)) {",
-                            "        pm.expect(actual, path + ' must be an array').to.be.an('array');",
-                            "        pm.expect(actual.length, path + ' array length').to.equal(oracle.length);",
-                            "        oracle.forEach((value, index) => matchOracle(actual[index], value, path + '[' + index + ']'));",
-                            "        return;",
-                            "    }",
-                            "    pm.expect(actual, path).to.eql(oracle);",
-                            "}",
-                            "",
-                            "if (expectedBody !== undefined && !expectedBodyError) {",
-                            "    let actualBody;",
-                            "    let jsonError;",
-                            "    try { actualBody = pm.response.json(); } catch (error) { jsonError = error; }",
-                            "    pm.test(testName('response body is valid JSON'), function () {",
-                            "        pm.expect(jsonError, jsonError && jsonError.message).to.equal(undefined);",
-                            "    });",
-                            "    if (!jsonError) {",
-                            "        if (saveTokenAsRaw) {",
-                            "            pm.test(testName('token requested by setup row is available'), function () {",
-                            "                pm.expect(actualBody).to.be.an('object').that.has.property('token');",
-                            "                pm.expect(actualBody.token).to.be.a('string').and.not.empty;",
-                            "            });",
-                            "            if (actualBody && typeof actualBody.token === 'string' && actualBody.token) {",
-                            "                pm.environment.set(String(saveTokenAsRaw), actualBody.token);",
-                            "            }",
-                            "        }",
-                            "        pm.test(testName('response body matches iteration oracle'), function () { matchOracle(actualBody, expectedBody, '$'); });",
-                            "        pm.test(testName('response does not expose credential or lockout internals'), function () {",
-                            "            const forbidden = /^(password|password_hash|passwordhash|reset_token|resettoken|otp|login_attempts|loginattempts|locked_until|lockeduntil)$/i;",
-                            "            const leaks = [];",
-                            "            function scan(value, path) {",
-                            "                if (!value || typeof value !== 'object') return;",
-                            "                Object.keys(value).forEach((key) => {",
-                            "                    const nextPath = path + '.' + key;",
-                            "                    if (forbidden.test(key)) leaks.push(nextPath);",
-                            "                    scan(value[key], nextPath);",
-                            "                });",
-                            "            }",
-                            "            scan(actualBody, '$');",
-                            "            pm.expect(leaks, 'sensitive fields found: ' + leaks.join(', ')).to.be.empty;",
-                            "        });",
-                            "    }",
-                            "}"
-                        ]
-                    }
-                }
-            ],
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json",
-                        "type": "text"
-                    },
-                    {
-                        "key": "X-Student-Id",
-                        "value": "{{studentId}}",
-                        "type": "text"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{{requestBody}}",
-                    "options": {
-                        "raw": {
-                            "language": "json"
-                        }
-                    }
-                },
-                "url": {
-                    "raw": "{{baseUrl}}/api/login",
-                    "host": [
-                        "{{baseUrl}}"
-                    ],
-                    "path": [
-                        "api",
-                        "login"
-                    ]
-                }
+          "name": "FR02-H-001 Forged JWT rejection",
+          "description": "First run a successful Login iteration with saveTokenAs=fr02ValidToken. This request forges alg=none without logging or committing the token.",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const validToken = pm.collectionVariables.get('fr02ValidToken') || pm.environment.get('fr02ValidToken');",
+                  "if (!validToken) throw new Error('FR02-H-001 setup requires fr02ValidToken from a successful Login row using saveTokenAs=fr02ValidToken');",
+                  "const parts = String(validToken).split('.');",
+                  "if (parts.length !== 3) throw new Error('FR02-H-001 setup token is not a three-segment JWT');",
+                  "const forgedHeader = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' })).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_');",
+                  "pm.variables.set('fr02ForgedToken', forgedHeader + '.' + parts[1] + '.');"
+                ]
+              }
             },
-            "response": []
-        },
-        {
-            "name": "FR-02 Human Extensions",
-            "description": "Support requests for student-authored FR02-H-001..005. H001 and H005 have dedicated assertions. H002 uses the two setup requests here plus Login iterations before/after the original lock expiry. H003 and H004 are state/timing sequences executed through Login iteration rows. No execution result is implied; fixture reset and controlled timing remain required.",
-            "item": [
-                {
-                    "name": "FR02-H-001 Forged JWT rejection",
-                    "description": "First run a successful Login iteration with saveTokenAs=fr02ValidToken. This request forges alg=none without logging or committing the token.",
-                    "event": [
-                        {
-                            "listen": "prerequest",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const validToken = pm.collectionVariables.get('fr02ValidToken') || pm.environment.get('fr02ValidToken');",
-                                    "if (!validToken) throw new Error('FR02-H-001 setup requires fr02ValidToken from a successful Login row using saveTokenAs=fr02ValidToken');",
-                                    "const parts = String(validToken).split('.');",
-                                    "if (parts.length !== 3) throw new Error('FR02-H-001 setup token is not a three-segment JWT');",
-                                    "const forgedHeader = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' })).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_');",
-                                    "pm.variables.set('fr02ForgedToken', forgedHeader + '.' + parts[1] + '.');"
-                                ]
-                            }
-                        },
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "pm.test('[FR02-H-001] forged alg=none JWT is rejected', function () {",
-                                    "    pm.expect([401, 403], 'actual status: ' + pm.response.code).to.include(pm.response.code);",
-                                    "});",
-                                    "pm.test('[FR02-H-001] rejected response does not return a profile object', function () {",
-                                    "    let body;",
-                                    "    try { body = pm.response.json(); } catch (error) { body = undefined; }",
-                                    "    if (body && typeof body === 'object') {",
-                                    "        pm.expect(body).to.not.have.property('user');",
-                                    "        pm.expect(body).to.not.have.property('profile');",
-                                    "    }",
-                                    "});",
-                                    "pm.variables.unset('fr02ForgedToken');",
-                                    "pm.collectionVariables.unset('fr02ValidToken');",
-                                    "pm.environment.unset('fr02ValidToken');"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "X-Student-Id",
-                                "value": "{{studentId}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{fr02ForgedToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/users/me",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "users",
-                                "me"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "FR02-H-002 Step 1 - Forgot password while locked",
-                    "description": "Run only after U-A is locked at recorded t0. Stores the documented resetToken in an environment variable for the next setup request.",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "let body;",
-                                    "let parseError;",
-                                    "try { body = pm.response.json(); } catch (error) { parseError = error; }",
-                                    "pm.test('[FR02-H-002 setup] forgot-password returns documented 200 JSON response', function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
-                                    "});",
-                                    "if (!parseError) {",
-                                    "    pm.test('[FR02-H-002 setup] resetToken is available for the reset step', function () {",
-                                    "        pm.expect(body).to.have.property('resetToken').that.is.a('string').and.not.empty;",
-                                    "    });",
-                                    "    if (body && typeof body.resetToken === 'string' && body.resetToken) pm.environment.set('fr02ResetToken', body.resetToken);",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            },
-                            {
-                                "key": "X-Student-Id",
-                                "value": "{{studentId}}",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\"email\":\"{{fr02EmailA}}\"}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/forgot-password",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "forgot-password"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "FR02-H-002 Step 2 - Reset password while locked",
-                    "description": "Requires fr02ResetToken from Step 1 and a local secret fr02NewPassword. After this setup, use Login data rows to assert rejection before t0+30s and success after t0+31s.",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "pm.test('[FR02-H-002 setup] password-reset operation succeeds before lock-bypass probe', function () {",
-                                    "    pm.expect(pm.response.code, 'reset-password success status class').to.be.within(200, 299);",
-                                    "});",
-                                    "pm.environment.unset('fr02ResetToken');"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            },
-                            {
-                                "key": "X-Student-Id",
-                                "value": "{{studentId}}",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\"email\":\"{{fr02EmailA}}\",\"resetToken\":\"{{fr02ResetToken}}\",\"newPassword\":\"{{fr02NewPassword}}\"}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/reset-password",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "reset-password"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "FR02-H-005 Forgot-password enumeration comparison",
-                    "description": "Run with exactly two ordered iteration rows: registered then unknown. Required fields: accountVariant and probeEmail. The script compares status, top-level schema and generic message; resetToken values are intentionally not compared.",
-                    "event": [
-                        {
-                            "listen": "prerequest",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const probeEmail = pm.iterationData.get('probeEmail');",
-                                    "const accountVariant = pm.iterationData.get('accountVariant');",
-                                    "if (!probeEmail) throw new Error('FR02-H-005 requires probeEmail in iteration data');",
-                                    "if (!['registered', 'unknown'].includes(accountVariant)) throw new Error('FR02-H-005 accountVariant must be registered or unknown');",
-                                    "pm.request.body.update(JSON.stringify({ email: pm.variables.replaceIn(String(probeEmail)) }));"
-                                ]
-                            }
-                        },
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const variant = pm.iterationData.get('accountVariant');",
-                                    "let body;",
-                                    "let parseError;",
-                                    "try { body = pm.response.json(); } catch (error) { parseError = error; }",
-                                    "pm.test('[FR02-H-005] forgot-password response is JSON', function () {",
-                                    "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
-                                    "});",
-                                    "if (!parseError) {",
-                                    "    const keys = Object.keys(body).sort().join(',');",
-                                    "    const message = typeof body.message === 'string' ? body.message : '';",
-                                    "    pm.test('[FR02-H-005] response has no explicit account-existence field', function () {",
-                                    "        ['exists', 'registered', 'userExists', 'userFound'].forEach((key) => pm.expect(body).to.not.have.property(key));",
-                                    "    });",
-                                    "    if (variant === 'registered') {",
-                                    "        pm.test('[FR02-H-005] registered-email baseline follows documented success contract', function () {",
-                                    "            pm.response.to.have.status(200);",
-                                    "            pm.expect(body).to.have.property('resetToken').that.is.a('string').and.not.empty;",
-                                    "        });",
-                                    "        pm.collectionVariables.set('fr02H005Status', String(pm.response.code));",
-                                    "        pm.collectionVariables.set('fr02H005Keys', keys);",
-                                    "        pm.collectionVariables.set('fr02H005Message', message);",
-                                    "    } else {",
-                                    "        const baselineStatus = pm.collectionVariables.get('fr02H005Status');",
-                                    "        const baselineKeys = pm.collectionVariables.get('fr02H005Keys');",
-                                    "        const baselineMessage = pm.collectionVariables.get('fr02H005Message');",
-                                    "        pm.test('[FR02-H-005] unknown-email response matches registered-email status and schema', function () {",
-                                    "            pm.expect(baselineStatus, 'run registered row before unknown row').to.not.equal(undefined);",
-                                    "            pm.expect(String(pm.response.code)).to.equal(baselineStatus);",
-                                    "            pm.expect(keys).to.equal(baselineKeys);",
-                                    "            pm.expect(message).to.equal(baselineMessage);",
-                                    "        });",
-                                    "        pm.collectionVariables.unset('fr02H005Status');",
-                                    "        pm.collectionVariables.unset('fr02H005Keys');",
-                                    "        pm.collectionVariables.unset('fr02H005Message');",
-                                    "    }",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            },
-                            {
-                                "key": "X-Student-Id",
-                                "value": "{{studentId}}",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\"email\":\"{{probeEmail}}\"}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/forgot-password",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "forgot-password"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "FR-10 Order State Machine",
-            "description": "Data-driven implementation for FR10-AI-001..047 and FR10-H-001..005. Run with FR10_data.csv. Before every iteration, restore the named order fixtures to their documented states. The collection does not fabricate fixture reset, concurrency support, or execution evidence.",
-            "item": [
-                {
-                    "name": "FR-10 Mutation Router (Data-Driven)",
-                    "description": "Routes method, path, raw JSON body and authentication from iteration data. Replay/near-enum cases use secondaryBody; race cases issue two asynchronous mutation requests and validate the allowed status pair.",
-                    "event": [
-                        {
-                            "listen": "prerequest",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const value = (key) => pm.iterationData.get(key);",
-                                    "const tcId = String(value('tcId') || '').trim();",
-                                    "const scenario = String(value('scenario') || 'normal').trim();",
-                                    "const requestMethod = String(value('requestMethod') || '').trim().toUpperCase();",
-                                    "const requestPath = String(value('requestPath') || '').trim();",
-                                    "const requestBody = value('requestBody');",
-                                    "const authMode = String(value('authMode') || '').trim();",
-                                    "",
-                                    "pm.variables.set('fr10TcId', tcId);",
-                                    "pm.variables.set('fr10Scenario', scenario);",
-                                    "pm.variables.set('fr10AuthMode', authMode);",
-                                    "pm.request.method = requestMethod;",
-                                    "pm.request.url = pm.variables.replaceIn('{{baseUrl}}' + requestPath);",
-                                    "if (pm.request.body) pm.request.body.update(pm.variables.replaceIn(requestBody == null ? '' : String(requestBody)));",
-                                    "pm.request.headers.upsert({ key: 'X-Student-Id', value: '{{studentId}}' });",
-                                    "if (requestBody !== undefined && requestBody !== null && String(requestBody) !== '') pm.request.headers.upsert({ key: 'Content-Type', value: 'application/json' });",
-                                    "",
-                                    "const tokenKeyByMode = { admin: 'fr10AdminToken', user: 'fr10UserAToken', otherUser: 'fr10UserBToken' };",
-                                    "const tokenKey = tokenKeyByMode[authMode];",
-                                    "const token = tokenKey ? (pm.environment.get(tokenKey) || pm.collectionVariables.get(tokenKey)) : '';",
-                                    "if (authMode === 'missing') {",
-                                    "    pm.request.headers.remove('Authorization');",
-                                    "} else if (authMode === 'invalid') {",
-                                    "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer invalid.fixture.token' });",
-                                    "} else {",
-                                    "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + (token || '') });",
-                                    "}",
-                                    "pm.variables.set('fr10AuthFixturePresent', String(authMode === 'missing' || authMode === 'invalid' || Boolean(token)));",
-                                    "if (!tcId) console.warn('FR-10 iteration row has no tcId; traceability assertion will fail.');"
-                                ]
-                            }
-                        },
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const iterVal = (key) => pm.iterationData.get(key);",
-                                    "const tcId = String(iterVal('tcId') || '').trim();",
-                                    "const scenario = String(iterVal('scenario') || 'normal').trim();",
-                                    "const expectedStatus = Number(iterVal('expectedStatus'));",
-                                    "const expectedBodyStatus = String(iterVal('expectedBodyStatus') || '').trim();",
-                                    "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
-                                    "",
-                                    "pm.test(label('iteration row has a traceable FR-10 TC ID'), function () {",
-                                    "    pm.expect(tcId).to.match(/^FR10-(?:AI|H)-\\d{3}$/);",
-                                    "});",
-                                    "pm.test(label('required authentication fixture is available'), function () {",
-                                    "    pm.expect(pm.variables.get('fr10AuthFixturePresent')).to.equal('true');",
-                                    "});",
-                                    "pm.test(label('response status matches the design oracle'), function () {",
-                                    "    pm.expect(Number.isInteger(expectedStatus), 'expectedStatus must be an integer').to.equal(true);",
-                                    "    pm.response.to.have.status(expectedStatus);",
-                                    "});",
-                                    "",
-                                    "let resBodyJson;",
-                                    "let responseParseError;",
-                                    "const responseText = pm.response.text();",
-                                    "if (responseText) {",
-                                    "    try { resBodyJson = pm.response.json(); } catch (error) { responseParseError = error; }",
-                                    "}",
-                                    "pm.test(label('response is valid JSON with a JSON content type'), function () {",
-                                    "    pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/i);",
-                                    "    pm.expect(responseText, 'response body must not be empty').to.not.equal('');",
-                                    "    pm.expect(responseParseError, responseParseError && responseParseError.message).to.equal(undefined);",
-                                    "});",
-                                    "",
-                                    "function collectForbiddenKeys(value, path, matches) {",
-                                    "    if (Array.isArray(value)) return value.forEach((item, index) => collectForbiddenKeys(item, path + '[' + index + ']', matches));",
-                                    "    if (!value || typeof value !== 'object') return;",
-                                    "    Object.keys(value).forEach((key) => {",
-                                    "        const normalized = key.toLowerCase().replace(/[_-]/g, '');",
-                                    "        if (['password', 'passwordhash', 'resettoken', 'token', 'accesstoken', 'authorization'].includes(normalized)) matches.push(path ? path + '.' + key : key);",
-                                    "        collectForbiddenKeys(value[key], path ? path + '.' + key : key, matches);",
-                                    "    });",
-                                    "}",
-                                    "pm.test(label('response exposes no credential fields'), function () {",
-                                    "    pm.expect(resBodyJson, 'JSON body must parse before sensitive-field scan').to.not.equal(undefined);",
-                                    "    const matches = [];",
-                                    "    collectForbiddenKeys(resBodyJson, '', matches);",
-                                    "    pm.expect(matches, 'forbidden fields: ' + matches.join(', ')).to.be.empty;",
-                                    "});",
-                                    "",
-                                    "if (expectedBodyStatus) {",
-                                    "    pm.test(label('success body reports the expected order status'), function () {",
-                                    "        pm.expect(resBodyJson, 'JSON body must parse').to.not.equal(undefined);",
-                                    "        const order = resBodyJson.order || resBodyJson.data || resBodyJson;",
-                                    "        pm.expect(order).to.be.an('object');",
-                                    "        pm.expect(order.status).to.equal(expectedBodyStatus);",
-                                    "    });",
-                                    "}",
-                                    "",
-                                    "function tokenFor(mode) {",
-                                    "    const keys = { admin: 'fr10AdminToken', user: 'fr10UserAToken', otherUser: 'fr10UserBToken' };",
-                                    "    const key = keys[mode];",
-                                    "    return key ? (pm.environment.get(key) || pm.collectionVariables.get(key) || '') : '';",
-                                    "}",
-                                    "function requestHeaders(mode) {",
-                                    "    const headers = { 'Content-Type': 'application/json', 'X-Student-Id': pm.variables.replaceIn('{{studentId}}') };",
-                                    "    if (mode === 'invalid') headers.Authorization = 'Bearer invalid.fixture.token';",
-                                    "    else if (mode !== 'missing') headers.Authorization = 'Bearer ' + tokenFor(mode);",
-                                    "    return headers;",
-                                    "}",
-                                    "",
-                                    "const secondaryBody = iterVal('secondaryBody');",
-                                    "if (scenario !== 'race' && secondaryBody !== undefined && secondaryBody !== null && String(secondaryBody) !== '') {",
-                                    "    const secondaryExpected = Number(iterVal('secondaryExpectedStatus'));",
-                                    "    pm.sendRequest({",
-                                    "        url: pm.variables.replaceIn('{{baseUrl}}' + String(iterVal('requestPath'))),",
-                                    "        method: String(iterVal('requestMethod')).toUpperCase(),",
-                                    "        header: requestHeaders(String(iterVal('authMode'))),",
-                                    "        body: { mode: 'raw', raw: pm.variables.replaceIn(String(secondaryBody)) }",
-                                    "    }, function (error, response) {",
-                                    "        pm.test(label('secondary request status matches replay/variant oracle'), function () {",
-                                    "            pm.expect(error, error && error.message).to.not.exist;",
-                                    "            pm.expect(response.code).to.equal(secondaryExpected);",
-                                    "        });",
-                                    "    });",
-                                    "}",
-                                    "",
-                                    "if (scenario === 'race') {",
-                                    "    const requests = [1, 2].map((index) => ({",
-                                    "        url: pm.variables.replaceIn('{{baseUrl}}' + String(iterVal('racePath' + index))),",
-                                    "        method: 'PUT',",
-                                    "        header: requestHeaders(String(iterVal('raceAuth' + index))),",
-                                    "        body: String(iterVal('raceBody' + index) || '') ? { mode: 'raw', raw: pm.variables.replaceIn(String(iterVal('raceBody' + index))) } : undefined",
-                                    "    }));",
-                                    "    const results = [];",
-                                    "    requests.forEach((request, index) => pm.sendRequest(request, function (error, response) {",
-                                    "        results[index] = { error: error, code: response && response.code };",
-                                    "        if (results.filter(Boolean).length !== 2) return;",
-                                    "        pm.test(label('concurrent requests match an allowed serializable status pair'), function () {",
-                                    "            pm.expect(results[0].error, results[0].error && results[0].error.message).to.not.exist;",
-                                    "            pm.expect(results[1].error, results[1].error && results[1].error.message).to.not.exist;",
-                                    "            const actualPair = results[0].code + '+' + results[1].code;",
-                                    "            const allowedPairs = String(iterVal('raceAllowedPairs') || '').split('|').filter(Boolean);",
-                                    "            pm.expect(allowedPairs).to.include(actualPair);",
-                                    "        });",
-                                    "    }));",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            },
-                            {
-                                "key": "X-Student-Id",
-                                "value": "{{studentId}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{fr10AdminToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
-                            }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/admin/orders/{{fr10OrderPendingId}}/status",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "admin",
-                                "orders",
-                                "{{fr10OrderPendingId}}",
-                                "status"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "FR-10 Persisted State Verification (Data-Driven)",
-                    "description": "Uses the admin order list as an independent follow-up read and verifies expectedState for verifyOrderId after each mutation/race row.",
-                    "event": [
-                        {
-                            "listen": "prerequest",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const tcId = String(pm.iterationData.get('tcId') || '').trim();",
-                                    "const verifyOrderId = pm.variables.replaceIn(String(pm.iterationData.get('verifyOrderId') || ''));",
-                                    "const expectedState = pm.variables.replaceIn(String(pm.iterationData.get('expectedState') || ''));",
-                                    "const adminToken = pm.environment.get('fr10AdminToken') || pm.collectionVariables.get('fr10AdminToken') || '';",
-                                    "pm.variables.set('fr10TcId', tcId);",
-                                    "pm.variables.set('fr10VerifyOrderId', verifyOrderId);",
-                                    "pm.variables.set('fr10ExpectedState', expectedState);",
-                                    "pm.variables.set('fr10AdminFixturePresent', String(Boolean(adminToken)));",
-                                    "pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + adminToken });",
-                                    "pm.request.headers.upsert({ key: 'X-Student-Id', value: '{{studentId}}' });"
-                                ]
-                            }
-                        },
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "const tcId = pm.variables.get('fr10TcId') || '';",
-                                    "const verifyOrderId = pm.variables.get('fr10VerifyOrderId') || '';",
-                                    "const expectedState = pm.variables.get('fr10ExpectedState') || '';",
-                                    "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
-                                    "",
-                                    "pm.test(label('verification inputs and admin fixture are resolved'), function () {",
-                                    "    pm.expect(tcId).to.match(/^FR10-(?:AI|H)-\\d{3}$/);",
-                                    "    pm.expect(pm.variables.get('fr10AdminFixturePresent')).to.equal('true');",
-                                    "    pm.expect(verifyOrderId).to.not.equal('').and.not.match(/{{.+}}/);",
-                                    "    pm.expect(expectedState).to.not.equal('').and.not.match(/{{.+}}/);",
-                                    "});",
-                                    "pm.test(label('verification read succeeds'), function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "    pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/i);",
-                                    "});",
-                                    "",
-                                    "let body;",
-                                    "let parseError;",
-                                    "try { body = pm.response.json(); } catch (error) { parseError = error; }",
-                                    "pm.test(label('verification response is valid JSON'), function () {",
-                                    "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
-                                    "});",
-                                    "pm.test(label('persisted order state matches the post-state oracle'), function () {",
-                                    "    pm.expect(body, 'verification JSON must parse').to.not.equal(undefined);",
-                                    "    const orders = Array.isArray(body) ? body : (Array.isArray(body.orders) ? body.orders : body.data);",
-                                    "    pm.expect(orders, 'admin order list must be an array or expose orders/data array').to.be.an('array');",
-                                    "    const order = orders.find((item) => String(item.id) === String(verifyOrderId));",
-                                    "    pm.expect(order, 'verifyOrderId must exist in admin order list').to.be.an('object');",
-                                    "    const allowedStates = expectedState.split('|').map((state) => state.trim()).filter(Boolean);",
-                                    "    pm.expect(allowedStates).to.include(String(order.status));",
-                                    "});"
-                                ]
-                            }
-                        }
-                    ],
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "X-Student-Id",
-                                "value": "{{studentId}}",
-                                "type": "text"
-                            },
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{fr10AdminToken}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/admin/orders",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "admin",
-                                "orders"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[FR02-H-001] forged alg=none JWT is rejected', function () {",
+                  "    pm.expect([401, 403], 'actual status: ' + pm.response.code).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('[FR02-H-001] rejected response does not return a profile object', function () {",
+                  "    let body;",
+                  "    try { body = pm.response.json(); } catch (error) { body = undefined; }",
+                  "    if (body && typeof body === 'object') {",
+                  "        pm.expect(body).to.not.have.property('user');",
+                  "        pm.expect(body).to.not.have.property('profile');",
+                  "    }",
+                  "});",
+                  "pm.variables.unset('fr02ForgedToken');",
+                  "pm.collectionVariables.unset('fr02ValidToken');",
+                  "pm.environment.unset('fr02ValidToken');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fr02ForgedToken}}",
+                "type": "text"
+              }
             ],
-            "event": [
-                {
-                    "listen": "prerequest",
-                    "script": {
-                        "type": "text/javascript",
-                        "exec": [
-                            "const copyKeys = ['fr10AdminToken', 'fr10UserAToken', 'fr10UserBToken', 'fr10OrderPendingId', 'fr10OrderConfirmedId', 'fr10OrderShippingId', 'fr10OrderDeliveredId', 'fr10OrderCanceledId'];",
-                            "copyKeys.forEach(key => {",
-                            "    if (pm.iterationData.has(key)) {",
-                            "        pm.collectionVariables.set(key, pm.iterationData.get(key));",
-                            "    }",
-                            "});"
-                        ]
-                    }
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR02-H-002 Step 1 - Forgot password while locked",
+          "description": "Run only after U-A is locked at recorded t0. Stores the documented resetToken in an environment variable for the next setup request.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let body;",
+                  "let parseError;",
+                  "try { body = pm.response.json(); } catch (error) { parseError = error; }",
+                  "pm.test('[FR02-H-002 setup] forgot-password returns documented 200 JSON response', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                  "});",
+                  "if (!parseError) {",
+                  "    pm.test('[FR02-H-002 setup] resetToken is available for the reset step', function () {",
+                  "        pm.expect(body).to.have.property('resetToken').that.is.a('string').and.not.empty;",
+                  "    });",
+                  "    if (body && typeof body.resetToken === 'string' && body.resetToken) pm.environment.set('fr02ResetToken', body.resetToken);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{fr02EmailA}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR02-H-002 Step 2 - Reset password while locked",
+          "description": "Requires fr02ResetToken from Step 1 and a local secret fr02NewPassword. After this setup, use Login data rows to assert rejection before t0+30s and success after t0+31s.",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('[FR02-H-002 setup] password-reset operation succeeds before lock-bypass probe', function () {",
+                  "    pm.expect(pm.response.code, 'reset-password success status class').to.be.within(200, 299);",
+                  "});",
+                  "pm.environment.unset('fr02ResetToken');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{fr02EmailA}}\",\"resetToken\":\"{{fr02ResetToken}}\",\"newPassword\":\"{{fr02NewPassword}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reset-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR02-H-005 Forgot-password enumeration comparison",
+          "description": "Run with exactly two ordered iteration rows: registered then unknown. Required fields: accountVariant and probeEmail. The script compares status, top-level schema and generic message; resetToken values are intentionally not compared.",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const probeEmail = pm.iterationData.get('probeEmail');",
+                  "const accountVariant = pm.iterationData.get('accountVariant');",
+                  "if (!probeEmail) throw new Error('FR02-H-005 requires probeEmail in iteration data');",
+                  "if (!['registered', 'unknown'].includes(accountVariant)) throw new Error('FR02-H-005 accountVariant must be registered or unknown');",
+                  "pm.request.body.update(JSON.stringify({ email: pm.variables.replaceIn(String(probeEmail)) }));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const variant = pm.iterationData.get('accountVariant');",
+                  "let body;",
+                  "let parseError;",
+                  "try { body = pm.response.json(); } catch (error) { parseError = error; }",
+                  "pm.test('[FR02-H-005] forgot-password response is JSON', function () {",
+                  "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                  "});",
+                  "if (!parseError) {",
+                  "    const keys = Object.keys(body).sort().join(',');",
+                  "    const message = typeof body.message === 'string' ? body.message : '';",
+                  "    pm.test('[FR02-H-005] response has no explicit account-existence field', function () {",
+                  "        ['exists', 'registered', 'userExists', 'userFound'].forEach((key) => pm.expect(body).to.not.have.property(key));",
+                  "    });",
+                  "    if (variant === 'registered') {",
+                  "        pm.test('[FR02-H-005] registered-email baseline follows documented success contract', function () {",
+                  "            pm.response.to.have.status(200);",
+                  "            pm.expect(body).to.have.property('resetToken').that.is.a('string').and.not.empty;",
+                  "        });",
+                  "        pm.collectionVariables.set('fr02H005Status', String(pm.response.code));",
+                  "        pm.collectionVariables.set('fr02H005Keys', keys);",
+                  "        pm.collectionVariables.set('fr02H005Message', message);",
+                  "    } else {",
+                  "        const baselineStatus = pm.collectionVariables.get('fr02H005Status');",
+                  "        const baselineKeys = pm.collectionVariables.get('fr02H005Keys');",
+                  "        const baselineMessage = pm.collectionVariables.get('fr02H005Message');",
+                  "        pm.test('[FR02-H-005] unknown-email response matches registered-email status and schema', function () {",
+                  "            pm.expect(baselineStatus, 'run registered row before unknown row').to.not.equal(undefined);",
+                  "            pm.expect(String(pm.response.code)).to.equal(baselineStatus);",
+                  "            pm.expect(keys).to.equal(baselineKeys);",
+                  "            pm.expect(message).to.equal(baselineMessage);",
+                  "        });",
+                  "        pm.collectionVariables.unset('fr02H005Status');",
+                  "        pm.collectionVariables.unset('fr02H005Keys');",
+                  "        pm.collectionVariables.unset('fr02H005Message');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{probeEmail}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "FR-10 Order State Machine",
+      "description": "Data-driven implementation for FR10-AI-001..047 and FR10-H-001..005. Run with FR10_data.csv. Before every iteration, restore the named order fixtures to their documented states. The collection does not fabricate fixture reset, concurrency support, or execution evidence.",
+      "item": [
+        {
+          "name": "FR-10 Mutation Router (Data-Driven)",
+          "description": "Routes method, path, raw JSON body and authentication from iteration data. Replay/near-enum cases use secondaryBody; race cases issue two asynchronous mutation requests and validate the allowed status pair.",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const value = (key) => pm.iterationData.get(key);",
+                  "const tcId = String(value('tcId') || '').trim();",
+                  "const scenario = String(value('scenario') || 'normal').trim();",
+                  "const requestMethod = String(value('requestMethod') || '').trim().toUpperCase();",
+                  "const requestPath = String(value('requestPath') || '').trim();",
+                  "const requestBody = value('requestBody');",
+                  "const authMode = String(value('authMode') || '').trim();",
+                  "",
+                  "pm.variables.set('fr10TcId', tcId);",
+                  "pm.variables.set('fr10Scenario', scenario);",
+                  "pm.variables.set('fr10AuthMode', authMode);",
+                  "pm.request.method = requestMethod;",
+                  "pm.request.url = pm.variables.replaceIn('{{baseUrl}}' + requestPath);",
+                  "if (pm.request.body) pm.request.body.update(pm.variables.replaceIn(requestBody == null ? '' : String(requestBody)));",
+                  "pm.request.headers.upsert({ key: 'X-Student-Id', value: '{{studentId}}' });",
+                  "if (requestBody !== undefined && requestBody !== null && String(requestBody) !== '') pm.request.headers.upsert({ key: 'Content-Type', value: 'application/json' });",
+                  "",
+                  "const tokenKeyByMode = { admin: 'fr10AdminToken', user: 'fr10UserAToken', otherUser: 'fr10UserBToken' };",
+                  "const tokenKey = tokenKeyByMode[authMode];",
+                  "const token = tokenKey ? (pm.environment.get(tokenKey) || pm.collectionVariables.get(tokenKey)) : '';",
+                  "if (authMode === 'missing') {",
+                  "    pm.request.headers.remove('Authorization');",
+                  "} else if (authMode === 'invalid') {",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer invalid.fixture.token' });",
+                  "} else {",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + (token || '') });",
+                  "}",
+                  "pm.variables.set('fr10AuthFixturePresent', String(authMode === 'missing' || authMode === 'invalid' || Boolean(token)));",
+                  "if (!tcId) console.warn('FR-10 iteration row has no tcId; traceability assertion will fail.');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const iterVal = (key) => pm.iterationData.get(key);",
+                  "const tcId = String(iterVal('tcId') || '').trim();",
+                  "const scenario = String(iterVal('scenario') || 'normal').trim();",
+                  "const expectedStatus = Number(iterVal('expectedStatus'));",
+                  "const expectedBodyStatus = String(iterVal('expectedBodyStatus') || '').trim();",
+                  "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
+                  "",
+                  "pm.test(label('iteration row has a traceable FR-10 TC ID'), function () {",
+                  "    pm.expect(tcId).to.match(/^FR10-(?:AI|H)-\\d{3}$/);",
+                  "});",
+                  "pm.test(label('required authentication fixture is available'), function () {",
+                  "    pm.expect(pm.variables.get('fr10AuthFixturePresent')).to.equal('true');",
+                  "});",
+                  "pm.test(label('response status matches the design oracle'), function () {",
+                  "    pm.expect(Number.isInteger(expectedStatus), 'expectedStatus must be an integer').to.equal(true);",
+                  "    pm.response.to.have.status(expectedStatus);",
+                  "});",
+                  "",
+                  "let resBodyJson;",
+                  "let responseParseError;",
+                  "const responseText = pm.response.text();",
+                  "if (responseText) {",
+                  "    try { resBodyJson = pm.response.json(); } catch (error) { responseParseError = error; }",
+                  "}",
+                  "pm.test(label('response is valid JSON with a JSON content type'), function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/i);",
+                  "    pm.expect(responseText, 'response body must not be empty').to.not.equal('');",
+                  "    pm.expect(responseParseError, responseParseError && responseParseError.message).to.equal(undefined);",
+                  "});",
+                  "",
+                  "function collectForbiddenKeys(value, path, matches) {",
+                  "    if (Array.isArray(value)) return value.forEach((item, index) => collectForbiddenKeys(item, path + '[' + index + ']', matches));",
+                  "    if (!value || typeof value !== 'object') return;",
+                  "    Object.keys(value).forEach((key) => {",
+                  "        const normalized = key.toLowerCase().replace(/[_-]/g, '');",
+                  "        if (['password', 'passwordhash', 'resettoken', 'token', 'accesstoken', 'authorization'].includes(normalized)) matches.push(path ? path + '.' + key : key);",
+                  "        collectForbiddenKeys(value[key], path ? path + '.' + key : key, matches);",
+                  "    });",
+                  "}",
+                  "pm.test(label('response exposes no credential fields'), function () {",
+                  "    pm.expect(resBodyJson, 'JSON body must parse before sensitive-field scan').to.not.equal(undefined);",
+                  "    const matches = [];",
+                  "    collectForbiddenKeys(resBodyJson, '', matches);",
+                  "    pm.expect(matches, 'forbidden fields: ' + matches.join(', ')).to.be.empty;",
+                  "});",
+                  "",
+                  "if (expectedBodyStatus) {",
+                  "    pm.test(label('success body reports the expected order status'), function () {",
+                  "        pm.expect(resBodyJson, 'JSON body must parse').to.not.equal(undefined);",
+                  "        const order = resBodyJson.order || resBodyJson.data || resBodyJson;",
+                  "        pm.expect(order).to.be.an('object');",
+                  "        pm.expect(order.status).to.equal(expectedBodyStatus);",
+                  "    });",
+                  "}",
+                  "",
+                  "function tokenFor(mode) {",
+                  "    const keys = { admin: 'fr10AdminToken', user: 'fr10UserAToken', otherUser: 'fr10UserBToken' };",
+                  "    const key = keys[mode];",
+                  "    return key ? (pm.environment.get(key) || pm.collectionVariables.get(key) || '') : '';",
+                  "}",
+                  "function requestHeaders(mode) {",
+                  "    const headers = { 'Content-Type': 'application/json', 'X-Student-Id': pm.variables.replaceIn('{{studentId}}') };",
+                  "    if (mode === 'invalid') headers.Authorization = 'Bearer invalid.fixture.token';",
+                  "    else if (mode !== 'missing') headers.Authorization = 'Bearer ' + tokenFor(mode);",
+                  "    return headers;",
+                  "}",
+                  "",
+                  "const secondaryBody = iterVal('secondaryBody');",
+                  "if (scenario !== 'race' && secondaryBody !== undefined && secondaryBody !== null && String(secondaryBody) !== '') {",
+                  "    const secondaryExpected = Number(iterVal('secondaryExpectedStatus'));",
+                  "    pm.sendRequest({",
+                  "        url: pm.variables.replaceIn('{{baseUrl}}' + String(iterVal('requestPath'))),",
+                  "        method: String(iterVal('requestMethod')).toUpperCase(),",
+                  "        header: requestHeaders(String(iterVal('authMode'))),",
+                  "        body: { mode: 'raw', raw: pm.variables.replaceIn(String(secondaryBody)) }",
+                  "    }, function (error, response) {",
+                  "        pm.test(label('secondary request status matches replay/variant oracle'), function () {",
+                  "            pm.expect(error, error && error.message).to.not.exist;",
+                  "            pm.expect(response.code).to.equal(secondaryExpected);",
+                  "        });",
+                  "    });",
+                  "}",
+                  "",
+                  "if (scenario === 'race') {",
+                  "    const requests = [1, 2].map((index) => ({",
+                  "        url: pm.variables.replaceIn('{{baseUrl}}' + String(iterVal('racePath' + index))),",
+                  "        method: 'PUT',",
+                  "        header: requestHeaders(String(iterVal('raceAuth' + index))),",
+                  "        body: String(iterVal('raceBody' + index) || '') ? { mode: 'raw', raw: pm.variables.replaceIn(String(iterVal('raceBody' + index))) } : undefined",
+                  "    }));",
+                  "    const results = [];",
+                  "    requests.forEach((request, index) => pm.sendRequest(request, function (error, response) {",
+                  "        results[index] = { error: error, code: response && response.code };",
+                  "        if (results.filter(Boolean).length !== 2) return;",
+                  "        pm.test(label('concurrent requests match an allowed serializable status pair'), function () {",
+                  "            pm.expect(results[0].error, results[0].error && results[0].error.message).to.not.exist;",
+                  "            pm.expect(results[1].error, results[1].error && results[1].error.message).to.not.exist;",
+                  "            const actualPair = results[0].code + '+' + results[1].code;",
+                  "            const allowedPairs = String(iterVal('raceAllowedPairs') || '').split('|').filter(Boolean);",
+                  "            pm.expect(allowedPairs).to.include(actualPair);",
+                  "        });",
+                  "    }));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fr10AdminToken}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/orders/{{fr10OrderPendingId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders",
+                "{{fr10OrderPendingId}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "FR-10 Persisted State Verification (Data-Driven)",
+          "description": "Uses the admin order list as an independent follow-up read and verifies expectedState for verifyOrderId after each mutation/race row.",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tcId = String(pm.iterationData.get('tcId') || '').trim();",
+                  "const verifyOrderId = pm.variables.replaceIn(String(pm.iterationData.get('verifyOrderId') || ''));",
+                  "const expectedState = pm.variables.replaceIn(String(pm.iterationData.get('expectedState') || ''));",
+                  "const adminToken = pm.environment.get('fr10AdminToken') || pm.collectionVariables.get('fr10AdminToken') || '';",
+                  "pm.variables.set('fr10TcId', tcId);",
+                  "pm.variables.set('fr10VerifyOrderId', verifyOrderId);",
+                  "pm.variables.set('fr10ExpectedState', expectedState);",
+                  "pm.variables.set('fr10AdminFixturePresent', String(Boolean(adminToken)));",
+                  "pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + adminToken });",
+                  "pm.request.headers.upsert({ key: 'X-Student-Id', value: '{{studentId}}' });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const tcId = pm.variables.get('fr10TcId') || '';",
+                  "const verifyOrderId = pm.variables.get('fr10VerifyOrderId') || '';",
+                  "const expectedState = pm.variables.get('fr10ExpectedState') || '';",
+                  "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
+                  "",
+                  "pm.test(label('verification inputs and admin fixture are resolved'), function () {",
+                  "    pm.expect(tcId).to.match(/^FR10-(?:AI|H)-\\d{3}$/);",
+                  "    pm.expect(pm.variables.get('fr10AdminFixturePresent')).to.equal('true');",
+                  "    pm.expect(verifyOrderId).to.not.equal('').and.not.match(/{{.+}}/);",
+                  "    pm.expect(expectedState).to.not.equal('').and.not.match(/{{.+}}/);",
+                  "});",
+                  "pm.test(label('verification read succeeds'), function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/i);",
+                  "});",
+                  "",
+                  "let body;",
+                  "let parseError;",
+                  "try { body = pm.response.json(); } catch (error) { parseError = error; }",
+                  "pm.test(label('verification response is valid JSON'), function () {",
+                  "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                  "});",
+                  "pm.test(label('persisted order state matches the post-state oracle'), function () {",
+                  "    pm.expect(body, 'verification JSON must parse').to.not.equal(undefined);",
+                  "    const orders = Array.isArray(body) ? body : (Array.isArray(body.orders) ? body.orders : body.data);",
+                  "    pm.expect(orders, 'admin order list must be an array or expose orders/data array').to.be.an('array');",
+                  "    const order = orders.find((item) => String(item.id) === String(verifyOrderId));",
+                  "    pm.expect(order, 'verifyOrderId must exist in admin order list').to.be.an('object');",
+                  "    const allowedStates = expectedState.split('|').map((state) => state.trim()).filter(Boolean);",
+                  "    pm.expect(allowedStates).to.include(String(order.status));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{fr10AdminToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "orders"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const copyKeys = ['fr10AdminToken', 'fr10UserAToken', 'fr10UserBToken', 'fr10OrderPendingId', 'fr10OrderConfirmedId', 'fr10OrderShippingId', 'fr10OrderDeliveredId', 'fr10OrderCanceledId'];",
+              "copyKeys.forEach(key => {",
+              "    if (pm.iterationData.has(key)) {",
+              "        pm.collectionVariables.set(key, pm.iterationData.get(key));",
+              "    }",
+              "});"
             ]
+          }
         }
-    ],
-    "variable": [
+      ]
+    },
+    {
+      "name": "FR-15 Product CRUD",
+      "description": "Data-driven implementation for FR15-AI-001..050 and FR15-H-001..005. Run with FR15_data.csv. Required columns: tcId, requestMethod, requestPath, requestBody, authMode, expectedStatus, expectedBody. Optional: verifyPath, verifyExpectedStatus, secondaryPath, secondaryMethod, secondaryBody, secondaryExpectedStatus, cleanupPath, saveCreatedIdAs. authMode values: admin | user | missing | invalid. The collection does not fabricate fixture IDs, execution results or cleanup confirmations.",
+      "item": [
         {
-            "key": "baseUrl",
-            "value": "http://localhost:3000",
-            "type": "string"
-        },
-        {
-            "key": "studentId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10AdminToken",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10UserAToken",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10UserBToken",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10OrderPendingId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10OrderConfirmedId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10OrderShippingId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10OrderDeliveredId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10OrderCanceledId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10SentinelOrderId",
-            "value": "",
-            "type": "string"
-        },
-        {
-            "key": "fr10SentinelState",
-            "value": "",
-            "type": "string"
+          "name": "FR-15 Mutation Router (Data-Driven)",
+          "description": "Routes method, path, raw JSON body and auth from iteration data. Covers GET, POST, PUT, DELETE for all 55 FR-15 test cases. Optional secondaryPath/secondaryMethod/secondaryBody columns support replay and two-step lifecycle checks (create-then-get, delete-then-get). saveCreatedIdAs stores a returned id into a collection variable for downstream cleanup rows.",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const val = (key) => pm.iterationData.get(key);",
+                  "const tcId = String(val('tcId') || '').trim();",
+                  "const requestMethod = String(val('requestMethod') || 'GET').trim().toUpperCase();",
+                  "const requestPath = String(val('requestPath') || '').trim();",
+                  "const requestBody = val('requestBody');",
+                  "const authMode = String(val('authMode') || '').trim();",
+                  "",
+                  "pm.variables.set('fr15TcId', tcId);",
+                  "pm.variables.set('fr15AuthMode', authMode);",
+                  "",
+                  "// Build URL: replace named placeholders like {fr15ProductAId} with collection variables",
+                  "const resolvedPath = pm.variables.replaceIn(requestPath.replace(/\\{(\\w+)\\}/g, '{{$1}}'));",
+                  "pm.request.method = requestMethod;",
+                  "pm.request.url = pm.variables.replaceIn('{{baseUrl}}') + resolvedPath;",
+                  "",
+                  "// Body",
+                  "const hasBody = requestBody !== undefined && requestBody !== null && String(requestBody).trim() !== '';",
+                  "if (pm.request.body) {",
+                  "    pm.request.body.update(hasBody ? pm.variables.replaceIn(String(requestBody)) : '');",
+                  "}",
+                  "if (hasBody) pm.request.headers.upsert({ key: 'Content-Type', value: 'application/json' });",
+                  "pm.request.headers.upsert({ key: 'X-Student-Id', value: pm.variables.replaceIn('{{studentId}}') });",
+                  "",
+                  "// Auth routing",
+                  "const adminToken = pm.environment.get('fr15AdminToken') || pm.collectionVariables.get('fr15AdminToken') || '';",
+                  "const userToken  = pm.environment.get('fr15UserToken')  || pm.collectionVariables.get('fr15UserToken')  || '';",
+                  "if (authMode === 'missing') {",
+                  "    pm.request.headers.remove('Authorization');",
+                  "} else if (authMode === 'invalid') {",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer invalid.fixture.token' });",
+                  "} else if (authMode === 'user') {",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + userToken });",
+                  "} else {",
+                  "    // 'admin' or any unrecognised mode: use admin token",
+                  "    pm.request.headers.upsert({ key: 'Authorization', value: 'Bearer ' + adminToken });",
+                  "}",
+                  "const tokenPresent = authMode === 'missing' || authMode === 'invalid' || Boolean(adminToken || userToken);",
+                  "pm.variables.set('fr15AuthFixturePresent', String(tokenPresent));",
+                  "if (!tcId) console.warn('FR-15 iteration row has no tcId; traceability assertion will fail.');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const val = (key) => pm.iterationData.get(key);",
+                  "const tcId = String(val('tcId') || '').trim();",
+                  "const label = (text) => '[' + (tcId || 'MISSING-TC-ID') + '] ' + text;",
+                  "const expectedStatusRaw = val('expectedStatus');",
+                  "const expectedBodyRaw = val('expectedBody');",
+                  "const saveCreatedIdAs = String(val('saveCreatedIdAs') || '').trim();",
+                  "const cleanupPath = String(val('cleanupPath') || '').trim();",
+                  "",
+                  "// --- Traceability ---",
+                  "pm.test(label('iteration row has a traceable FR-15 TC ID'), function () {",
+                  "    pm.expect(tcId).to.match(/^FR15-(?:AI|H)-\\d{3}$/);",
+                  "});",
+                  "",
+                  "// --- Status oracle ---",
+                  "function normalizeStatus(raw) {",
+                  "    if (raw === undefined || raw === null || raw === '') throw new Error('expectedStatus is required');",
+                  "    if (typeof raw === 'number') return { kind: 'codes', values: [raw] };",
+                  "    if (Array.isArray(raw)) return { kind: 'codes', values: raw.map(Number) };",
+                  "    const s = String(raw).trim();",
+                  "    if (/^[1-5]xx$/i.test(s)) return { kind: 'class', value: Number(s[0]) };",
+                  "    if (/^\\d{3}(,\\d{3})+$/.test(s)) return { kind: 'codes', values: s.split(',').map(Number) };",
+                  "    if (/^\\d{3}$/.test(s)) return { kind: 'codes', values: [Number(s)] };",
+                  "    throw new Error('expectedStatus must be a code, code list, or class like 4xx');",
+                  "}",
+                  "let statusOracle; let statusError;",
+                  "try { statusOracle = normalizeStatus(expectedStatusRaw); } catch (e) { statusError = e; }",
+                  "pm.test(label('expectedStatus oracle is valid'), function () {",
+                  "    pm.expect(statusError, statusError && statusError.message).to.equal(undefined);",
+                  "});",
+                  "if (statusOracle) {",
+                  "    pm.test(label('response status matches design oracle'), function () {",
+                  "        if (statusOracle.kind === 'class') pm.expect(Math.floor(pm.response.code / 100)).to.equal(statusOracle.value);",
+                  "        else pm.expect(statusOracle.values, 'actual: ' + pm.response.code).to.include(pm.response.code);",
+                  "    });",
+                  "}",
+                  "",
+                  "// --- JSON body parse ---",
+                  "const responseText = pm.response.text();",
+                  "let resBody; let parseError;",
+                  "if (responseText && responseText.trim()) {",
+                  "    try { resBody = pm.response.json(); } catch (e) { parseError = e; }",
+                  "}",
+                  "pm.test(label('response body is valid JSON'), function () {",
+                  "    pm.expect(responseText, 'response must not be empty').to.be.ok;",
+                  "    pm.expect(parseError, parseError && parseError.message).to.equal(undefined);",
+                  "});",
+                  "",
+                  "// --- Credential leak scan ---",
+                  "pm.test(label('response exposes no sensitive credential fields'), function () {",
+                  "    pm.expect(resBody, 'JSON body must parse before scan').to.not.equal(undefined);",
+                  "    const forbidden = /^(password|password_hash|passwordhash|reset_token|resettoken|otp|secret_key|secretkey)$/i;",
+                  "    const leaks = [];",
+                  "    function scan(v, path) {",
+                  "        if (!v || typeof v !== 'object') return;",
+                  "        Object.keys(v).forEach(k => {",
+                  "            if (forbidden.test(k)) leaks.push(path + '.' + k);",
+                  "            scan(v[k], path + '.' + k);",
+                  "        });",
+                  "    }",
+                  "    scan(resBody, '$');",
+                  "    pm.expect(leaks, 'sensitive fields: ' + leaks.join(', ')).to.be.empty;",
+                  "});",
+                  "",
+                  "// --- Body oracle matching ---",
+                  "function matchOracle(actual, oracle, path) {",
+                  "    if (oracle && typeof oracle === 'object' && !Array.isArray(oracle)) {",
+                  "        if (Object.prototype.hasOwnProperty.call(oracle, '$absent')) { pm.expect(actual, path + ' must be absent').to.equal(undefined); return; }",
+                  "        if (oracle.$type !== undefined) pm.expect(typeof actual === 'object' && actual !== null && !Array.isArray(actual) ? 'object' : Array.isArray(actual) ? 'array' : actual === null ? 'null' : typeof actual, path + ' type').to.equal(oracle.$type);",
+                  "        if (oracle.$nonEmpty === true) { pm.expect(actual, path + ' must be non-empty').to.be.ok; if (Array.isArray(actual)) pm.expect(actual.length, path + ' array must be non-empty').to.be.above(0); }",
+                  "        if (oracle.$regex !== undefined) pm.expect(String(actual), path + ' regex').to.match(new RegExp(oracle.$regex));",
+                  "        if (oracle.$oneOf !== undefined) pm.expect(oracle.$oneOf, path + ' must be in oneOf').to.include(actual);",
+                  "        const directives = ['$absent', '$type', '$nonEmpty', '$regex', '$oneOf'];",
+                  "        Object.keys(oracle).filter(k => !directives.includes(k)).forEach(k => {",
+                  "            pm.expect(actual, path + ' must be object to have .' + k).to.be.an('object');",
+                  "            const child = oracle[k];",
+                  "            const expectAbsent = child && typeof child === 'object' && Object.prototype.hasOwnProperty.call(child, '$absent');",
+                  "            if (!expectAbsent) pm.expect(actual, path + '.' + k + ' must exist').to.have.property(k);",
+                  "            matchOracle(actual[k], child, path + '.' + k);",
+                  "        });",
+                  "        return;",
+                  "    }",
+                  "    if (Array.isArray(oracle)) { pm.expect(actual, path + ' must be array').to.be.an('array'); oracle.forEach((v, i) => matchOracle(actual[i], v, path + '[' + i + ']')); return; }",
+                  "    pm.expect(actual, path).to.eql(oracle);",
+                  "}",
+                  "if (expectedBodyRaw !== undefined && expectedBodyRaw !== null && String(expectedBodyRaw).trim() !== '') {",
+                  "    let oracle; let oracleError;",
+                  "    try { oracle = typeof expectedBodyRaw === 'string' ? JSON.parse(expectedBodyRaw) : expectedBodyRaw; } catch (e) { oracleError = e; }",
+                  "    pm.test(label('expectedBody oracle is valid JSON'), function () {",
+                  "        pm.expect(oracleError, oracleError && oracleError.message).to.equal(undefined);",
+                  "    });",
+                  "    if (!oracleError && resBody !== undefined) {",
+                  "        pm.test(label('response body matches design oracle'), function () {",
+                  "            matchOracle(resBody, oracle, '$');",
+                  "        });",
+                  "    }",
+                  "}",
+                  "",
+                  "// --- Save created product ID for cleanup ---",
+                  "if (saveCreatedIdAs && resBody && typeof resBody === 'object') {",
+                  "    const createdId = resBody.id || (resBody.product && resBody.product.id) || (resBody.data && resBody.data.id);",
+                  "    if (createdId !== undefined) {",
+                  "        pm.collectionVariables.set(saveCreatedIdAs, String(createdId));",
+                  "        pm.test(label('created product id saved to collection variable ' + saveCreatedIdAs), function () {",
+                  "            pm.expect(String(createdId)).to.not.be.empty;",
+                  "        });",
+                  "    }",
+                  "}",
+                  "",
+                  "// --- Optional secondary request (e.g. GET after DELETE to confirm 404, replay) ---",
+                  "const secondaryPath = String(val('secondaryPath') || '').trim();",
+                  "const secondaryMethod = String(val('secondaryMethod') || 'GET').trim().toUpperCase();",
+                  "const secondaryBody = val('secondaryBody');",
+                  "const secondaryExpectedStatus = val('secondaryExpectedStatus');",
+                  "if (secondaryPath) {",
+                  "    const adminToken = pm.environment.get('fr15AdminToken') || pm.collectionVariables.get('fr15AdminToken') || '';",
+                  "    const userToken  = pm.environment.get('fr15UserToken')  || pm.collectionVariables.get('fr15UserToken')  || '';",
+                  "    const authMode = String(val('authMode') || '').trim();",
+                  "    const headers = { 'X-Student-Id': pm.variables.replaceIn('{{studentId}}') };",
+                  "    if (authMode === 'missing') { /* no auth */ }",
+                  "    else if (authMode === 'invalid') { headers.Authorization = 'Bearer invalid.fixture.token'; }",
+                  "    else if (authMode === 'user') { headers.Authorization = 'Bearer ' + userToken; }",
+                  "    else { headers.Authorization = 'Bearer ' + adminToken; }",
+                  "    const hasSecondaryBody = secondaryBody !== undefined && secondaryBody !== null && String(secondaryBody).trim() !== '';",
+                  "    if (hasSecondaryBody) headers['Content-Type'] = 'application/json';",
+                  "    pm.sendRequest({",
+                  "        url: pm.variables.replaceIn('{{baseUrl}}') + pm.variables.replaceIn(secondaryPath.replace(/\\{(\\w+)\\}/g, '{{$1}}')),",
+                  "        method: secondaryMethod,",
+                  "        header: headers,",
+                  "        body: hasSecondaryBody ? { mode: 'raw', raw: pm.variables.replaceIn(String(secondaryBody)) } : undefined",
+                  "    }, function (error, response) {",
+                  "        pm.test(label('secondary request succeeds without network error'), function () {",
+                  "            pm.expect(error, error && error.message).to.not.exist;",
+                  "        });",
+                  "        if (secondaryExpectedStatus !== undefined && secondaryExpectedStatus !== null && String(secondaryExpectedStatus).trim() !== '') {",
+                  "            pm.test(label('secondary response status matches oracle'), function () {",
+                  "                pm.expect(error).to.not.exist;",
+                  "                const expStatus = Number(String(secondaryExpectedStatus).trim());",
+                  "                pm.expect(response.code, 'secondary actual: ' + response.code).to.equal(expStatus);",
+                  "            });",
+                  "        }",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Student-Id",
+                "value": "{{studentId}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            }
+          },
+          "response": []
         }
-    ]
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Copy runtime token/fixture variables from iteration data into collection scope if provided.",
+              "const copyKeys = ['fr15AdminToken', 'fr15UserToken', 'fr15ProductAId', 'fr15ProductBId', 'fr15CategoryAId', 'fr15CategoryBId'];",
+              "copyKeys.forEach(key => {",
+              "    if (pm.iterationData.has(key)) {",
+              "        pm.collectionVariables.set(key, pm.iterationData.get(key));",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "studentId",
+      "value": "23127104",
+      "type": "string"
+    },
+    {
+      "key": "fr10AdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10UserAToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10UserBToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderPendingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderConfirmedId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderShippingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderDeliveredId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10OrderCanceledId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10SentinelOrderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr10SentinelState",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15AdminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15UserToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15ProductAId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15ProductBId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15CategoryAId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15CategoryBId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15CreatedProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fr15DisposableProductId",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }

@@ -1,17 +1,17 @@
 # HW06 – AI API Testing
 
-> Sinh viên: `[HỌ VÀ TÊN]`  
-> MSSV: `[STUDENT_ID]`  
-> Repository công khai: `[GITHUB_REPOSITORY_URL]`  
-> Video demo Agent Skill: `[YOUTUBE_URL hoặc N/A]`
+> Sinh viên: `Nguyễn Bình Minh Phương`
+> MSSV: `23127104`
+> Repository công khai: [nbmp2005/SoftwareTesting-HW06-23127104](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104)
+> Video demo Agent Skill: https://youtu.be/eC5qsSpc4h4
 
 Repository này chứa hồ sơ thực hiện HW06 cho ba feature đã chọn:
 
 | Pool | Feature | API family chính | Trạng thái |
 | :--- | :--- | :--- | :--- |
-| A | FR-02 – Login & account lockout | `POST /api/login` + supporting auth probes | 40 AI candidates + 5 human extensions; Postman implementation partial; chờ AI audit, iteration/setup và execution |
-| B | FR-10 – Order state machine | `PUT /api/admin/orders/:id/status`, `PUT /api/orders/:id/cancel` | 47 AI + 5 human; Newman mapped 52/52: 8 PASS, 40 FAIL, 4 BLOCKED; chờ audit/triage và rerun fixture |
-| C | FR-15 – Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | 50 AI candidates; chờ human audit, human extensions, Postman implementation và execution |
+| A | FR-02 – Login & account lockout | `POST /api/login` + supporting auth probes | 40 AI + 5 human; Newman mapped 45/45: 36 PASS, 9 FAIL; 1 genuine bug |
+| B | FR-10 – Order state machine | `PUT /api/admin/orders/:id/status`, `PUT /api/orders/:id/cancel` | 47 AI + 5 human; Newman mapped 52/52: 0 PASS, 48 FAIL, 4 BLOCKED; 1 confirmed bug |
+| C | FR-15 – Product CRUD | `GET/POST/PUT/DELETE /api/products[/:id]` | 50 AI + 5 human; Newman mapped 55/55: 7 PASS, 48 FAIL; 2 confirmed bugs |
 
 Lựa chọn này hợp lệ vì lấy đúng một feature từ mỗi Pool A, B, C. Trước khi bắt đầu, phải xác nhận bộ ba không trùng với thành viên khác trong nhóm.
 
@@ -22,23 +22,24 @@ Chỉ điền số liệu từ kết quả thực tế; không suy đoán hoặc
 | Chỉ số | FR-02 | FR-10 | FR-15 | Tổng |
 | :--- | ---: | ---: | ---: | ---: |
 | AI-generated test cases | `40` | `47` | `50` | `137` |
-| Human-added test cases | `5` | `5` | `0` | `10` |
-| Final test cases | `45` | `52` | `[pending]` | `97` |
-| Executed | `45` | `52` | `[0]` | `97` |
-| Passed | `36` | `8` | `[0]` | `44` |
-| Failed | `9` | `44` | `[0]` | `53` |
-| Blocked | `0` | `0` | `[0]` | `0` |
-| Genuine bugs | `1` | `3` | `[0]` | `4` |
+| Human-added test cases | `5` | `5` | `5` | `15` |
+| Planned test cases (generated + human-added) | `45` | `52` | `55` | `152` |
+| Final executable after human audit | `45` | `52` | `55` | `152` |
+| Executed | `45` | `48` | `55` | `148` |
+| Passed | `36` | `0` | `7` | `43` |
+| Failed | `9` | `48` | `48` | `105` |
+| Blocked | `0` | `4` | `0` | `4` |
+| Genuine bugs | `1` | `1` | `2` | `4` |
 
 ## Self-assessment
 
 | No. | Criteria | Grade | Self-Assessed Grade | Evidence |
 | :--- | :--- | ---: | ---: | :--- |
-| 1 | API 1 – FR-02 full pipeline | 30 | `[ ]` | [Main report](report/MAIN_REPORT.md#5-fr-02--login--account-lockout) |
-| 2 | API 2 – FR-10 full pipeline | 30 | `[ ]` | [Main report](report/MAIN_REPORT.md#6-fr-10--order-state-machine) |
-| 3 | API 3 – FR-15 full pipeline | 30 | `[ ]` | [Main report](report/MAIN_REPORT.md#7-fr-15--product-crud) |
-| 4 | Agent Skill – AI-driven test generator | 10 | `[ ]` | [Skill design](report/AGENT_SKILL_DESIGN.md) |
-| **Total** | | **100** | **`[000]`** | |
+| 1 | API 1 – FR-02 full pipeline | 30 | `30` | [Main report](report/MAIN_REPORT.md#5-fr-02--login--account-lockout) |
+| 2 | API 2 – FR-10 full pipeline | 30 | `30` | [Main report](report/MAIN_REPORT.md#6-fr-10--order-state-machine) |
+| 3 | API 3 – FR-15 full pipeline | 30 | `30` | [Main report](report/MAIN_REPORT.md#7-fr-15--product-crud) |
+| 4 | Agent Skill – AI-driven test generator | 10 | `10` | [Skill design](report/AGENT_SKILL_DESIGN.md) |
+| **Total** | | **100** | **`100`** | |
 
 ## Document map
 
@@ -48,11 +49,13 @@ Chỉ điền số liệu từ kết quả thực tế; không suy đoán hoặc
 - [Main report](report/MAIN_REPORT.md)
 - [Test summary](report/TEST_SUMMARY.md)
 - [Bug report](report/BUG_REPORT.md)
+- GitHub issues: [BUG-001](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/1), [BUG-002](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/2), [BUG-003](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/3), [BUG-004](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/4), [BUG-005](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/5), [BUG-006](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/6), [BUG-007](https://github.com/nbmp2005/SoftwareTesting-HW06-23127104/issues/7)
 - [CI/CD report](report/CICD_REPORT.md)
 - [Agent Skill design](report/AGENT_SKILL_DESIGN.md)
 - [AI Critique](report/AI_CRITIQUE.md)
 - [AI Audit Report](report/AI_AUDIT_REPORT.md)
 - [Git commit log](report/GIT_COMMIT_LOG.md)
+- [Raw Git commit log](git_commit_log.txt)
 
 ## Agent Skill workflow
 
@@ -73,4 +76,4 @@ Mọi skill phải giữ nguyên các field chưa có evidence; không được 
 
 Các file sau chỉ được thêm sau khi có dữ liệu/chứng cứ thật: Postman collection JSON, environment JSON đã loại secret, data files, Newman HTML, Excel test cases và summary, screenshots, sơ đồ tự vẽ PNG, PDF của report/audit/critique, và pipeline YAML.
 
-Tên file nộp cuối: `[STUDENT_ID]_HW06_AI_API_[SELF_ASSESSED_GRADE_3_DIGITS].zip`.
+Tên file nộp cuối: `23127104_HW06_AI_API_<điểm-tự-đánh-giá-3-chữ-số>.zip`. Điểm và tên file cuối phải do sinh viên chốt sau khi hoàn thành các mục còn thiếu trong checklist.

@@ -27,9 +27,7 @@ You must draw the submitted diagram yourself. Use these student-owned design blo
 7. Human gate: VALID/INVALID/INCOMPLETE, correction, ≥5 own cases.
 8. Downstream, outside generator: Postman/Newman execution and bug triage.
 
-Suggested drawing procedure: draw these blocks manually in diagrams.net/PowerPoint/paper, choose the arrows and feedback loop yourself, export PNG, and replace `[SELF_DRAWN_DIAGRAM_PATH]` below.
-
-![Self-drawn generator diagram]([SELF_DRAWN_DIAGRAM_PATH])
+Suggested drawing procedure: draw these blocks manually in diagrams.net/PowerPoint/paper, choose the arrows and feedback loop yourself, and export PNG. **Submission gap:** no self-drawn diagram file is currently present in the repository.
 
 ## 4. Pseudocode
 
